@@ -195,7 +195,6 @@ export const resetAdminPassword = async (email, password, confirmPassword ) => {
     
       
   
-  
 
 console.log(user)
     return {user};
