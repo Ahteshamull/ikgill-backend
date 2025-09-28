@@ -23,7 +23,10 @@ export const schedulePlannerNotification = (planner) => {
     schedule.scheduleJob(notificationDate, async () => {
       try {
         // Create notification for the user
-        await createNotification({ userId: planner.user, plannerId: planner._id });
+        await createNotification({
+          userId: planner.user,
+          plannerId: planner._id,
+        });
 
         // Increment outfit usage counter
         const outfit = await Outfit.findById(planner.outfit);
@@ -39,6 +42,9 @@ export const schedulePlannerNotification = (planner) => {
       }
     });
   } else {
-    console.log("Planner time is in the past, not scheduling:", notificationDate);
+    console.log(
+      "Planner time is in the past, not scheduling:",
+      notificationDate
+    );
   }
 };

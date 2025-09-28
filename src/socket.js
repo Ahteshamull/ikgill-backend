@@ -6,8 +6,8 @@ export const initSocket = (server) => {
   io = new Server(server, {
     cors: {
       origin: "*", // change to your frontend URL in production
-      methods: ["GET", "POST"]
-    }
+      methods: ["GET", "POST"],
+    },
   });
 
   io.on("connection", (socket) => {
@@ -36,7 +36,6 @@ export const sendNotificationToUser = (userId, notification) => {
     io.to(userId.toString()).emit("notification", notification);
   }
 };
-
 
 export const sendNotificationToAdmin = (userId, notification) => {
   if (io) {

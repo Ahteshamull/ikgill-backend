@@ -14,13 +14,15 @@ const s3 = new S3Client({
 });
 
 export const uploadMiddleware = multer({
-  storage: multerS3({
-    s3,
-    bucket: process.env.AWS_BUCKET_NAME,
-    contentType: multerS3.AUTO_CONTENT_TYPE,
-     contentDisposition: "inline", 
-    key: (req, file, cb) => {
-      const fileName = `uploads/${Date.now()}-${file.originalname.replace(/\s+/g, "-")}`;
+  storage: multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, "uploads/");
+    },
+    filename: function (req, file, cb) {
+      const fileName = `${Date.now()}-${file.originalname.replace(
+        /\s+/g,
+        "-"
+      )}`;
       cb(null, fileName);
     },
   }),
@@ -35,8 +37,6 @@ export const uploadMiddleware = multer({
   limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB
 });
 
-
-
 export const SingleuploadMiddleware = multer({
   storage: multerS3({
     s3,
@@ -44,7 +44,10 @@ export const SingleuploadMiddleware = multer({
     contentType: multerS3.AUTO_CONTENT_TYPE,
     contentDisposition: "inline", // 👈 ensures browser views instead of downloading
     key: (req, file, cb) => {
-      const fileName = `uploads/${Date.now()}-${file.originalname.replace(/\s+/g, "-")}`;
+      const fileName = `uploads/${Date.now()}-${file.originalname.replace(
+        /\s+/g,
+        "-"
+      )}`;
       cb(null, fileName);
     },
   }),
@@ -56,4 +59,4 @@ export const SingleuploadMiddleware = multer({
     }
   },
   limits: { fileSize: 20 * 1024 * 1024 }, // 5 MB
-}).single("image"); 
+}).single("image");
