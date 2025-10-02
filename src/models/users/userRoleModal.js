@@ -14,34 +14,29 @@ const userRoleSchema = new Schema(
       unique: [true],
       trim: true,
     },
-    password: {
+    phone: {
       type: String,
       required: [true],
       trim: true,
     },
-    otp: {
-      type: Number,
-    },
-    phone: {
-      type: String,
-    },
-    address: {
-      type: String,
-    },
     image: {
-      type: String,
+      type: [String],
     },
-    isVerify: {
-      type: Boolean,
-      default: false,
-    },
+
     role: {
       type: String,
       enum: ["user", "admin"],
       default: "user",
     },
-    refreshToken: {
+    clinic: {
       type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+    lab: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
     },
   },
   {

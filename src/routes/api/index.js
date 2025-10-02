@@ -1,6 +1,7 @@
 import express from "express";
 import auth from "./auth.js"; 
 import user from "./user.js"; 
+import lab from "./lab.js";
 // import message from "./message.js";
 
 const router = express.Router();
@@ -11,7 +12,7 @@ router.use("/auth", auth);
 // localhost:3000/api/v1/user/
 router.use("/user", user);
 
-// // localhost:3000/api/v1/message/
-// router.use("/message", message);
+// localhost:3000/api/v1/lab/
+router.use("/lab", lab);
 
 export default router;
