@@ -1,3 +1,0 @@
-export const JWT_KEY='ABC12341241234';
-export const JWT_EXPIRE_TIME=30*24*60*60;
-export const JWT_KEY_ADMIN='AdminABC12341241234';
