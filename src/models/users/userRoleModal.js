@@ -22,7 +22,11 @@ const userRoleSchema = new Schema(
     image: {
       type: [String],
     },
-
+    userStatus: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
+    },
     role: {
       type: String,
       enum: [
