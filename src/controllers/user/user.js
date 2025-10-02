@@ -32,4 +32,6 @@ export const createUser = async (req, res) => {
       error: error.message,
     });
   }
+ 
+  
 };

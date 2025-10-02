@@ -25,18 +25,22 @@ const userRoleSchema = new Schema(
 
     role: {
       type: String,
-      enum: ["user", "admin"],
-      default: "user",
+      enum: [
+        "dentist",
+        "labmanager",
+        "practicemanager",
+        "practicenurse",
+        "labtechnician",
+      ],
+      default: "dentist",
     },
     clinic: {
-      type: String,
-      enum: ["user", "admin"],
-      default: "user",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Clinic",
     },
     lab: {
-      type: String,
-      enum: ["user", "admin"],
-      default: "user",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Lab",
     },
   },
   {
