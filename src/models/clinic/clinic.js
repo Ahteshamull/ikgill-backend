@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
-const labSchema = new Schema(
+const clinicSchema = new Schema(
     {
         name: {
             type: String,
@@ -19,7 +19,7 @@ const labSchema = new Schema(
             required: [true],
             trim: true,
         },
-        labStatus: {
+        clinicStatus: {
             type: String,
             enum: ["active", "inactive"],
             default: "active",
@@ -32,4 +32,4 @@ const labSchema = new Schema(
     }
 );
 
-export default mongoose.model("Lab", labSchema);
+export default mongoose.model("Clinic", clinicSchema);

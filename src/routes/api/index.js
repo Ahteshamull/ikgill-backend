@@ -2,6 +2,7 @@ import express from "express";
 import auth from "./auth.js"; 
 import user from "./user.js"; 
 import lab from "./lab.js";
+import clinic from "./clinic.js";
 // import message from "./message.js";
 
 const router = express.Router();
@@ -14,5 +15,8 @@ router.use("/user", user);
 
 // localhost:3000/api/v1/lab/
 router.use("/lab", lab);
+
+// localhost:3000/api/v1/clinic/
+router.use("/clinic", clinic);
 
 export default router;

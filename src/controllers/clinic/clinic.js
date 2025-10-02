@@ -1,46 +1,46 @@
-import labModel from "../../models/lab/lab.js";
+import clinicModel from "../../models/clinic/clinic.js";
 
-export const createLab = async (req, res) => {
+export const createClinic = async (req, res) => {
     try {
         const { name, email, details } = req.body;
-        const lab = await labModel.create({
+        const clinic = await clinicModel.create({
             name,
             email,
             details,
         });
         return res.status(201).json({
             success: true,
-            message: "Lab created successfully",
-            data: lab,
+            message: "Clinic created successfully",
+            data: clinic,
         });
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: "Lab creation failed",
+            message: "Clinic creation failed",
             error: error.message,
         });
     }
 };
-export const getLab = async (req, res) => {
+export const getClinic = async (req, res) => {
     try {
-        const lab = await labModel.find();
+        const clinic = await clinicModel.find();
         return res.status(200).json({
             success: true,
-            message: "Lab fetched successfully",
-            data: lab,
+            message: "Clinic fetched successfully",
+            data:  clinic,
         });
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: "Lab fetching failed",
+            message: "Clinic fetching failed",
             error: error.message,
         });
     }
 };
-export const updateLab = async (req, res) => {
+export const updateClinic = async (req, res) => {
     try {
         const { name, email, details } = req.body;
-        const lab = await labModel.findByIdAndUpdate(
+        const clinic = await clinicModel.findByIdAndUpdate(
             req.params.id,
             {
                 name,
@@ -51,69 +51,69 @@ export const updateLab = async (req, res) => {
         );
         return res.status(200).json({
             success: true,
-            message: "Lab updated successfully",
-            data: lab,
+            message: "Clinic updated successfully",
+            data: clinic,
         });
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: "Lab updating failed",
+            message: "Clinic updating failed",
             error: error.message,
         });
     }
 };
-export const deleteLab = async (req, res) => {
+export const deleteClinic = async (req, res) => {
     try {
-        const lab = await labModel.findByIdAndDelete(req.params.id);
+        const clinic = await clinicModel.findByIdAndDelete(req.params.id);
         return res.status(200).json({
             success: true,
-            message: "Lab deleted successfully",
-            data: lab,
+            message: "Clinic deleted successfully",
+            data: clinic,
         });
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: "Lab deleting failed",
+            message: "Clinic deleting failed",
             error: error.message,
         });
     }
 };
-export const singleLabById = async (req, res) => {
+export const singleClinicById = async (req, res) => {
     try {
-        const lab = await labModel.findById(req.params.id);
+        const clinic = await clinicModel.findById(req.params.id);
         return res.status(200).json({
             success: true,
-            message: "Lab fetched successfully",
-            data: lab,
+            message: "Clinic fetched successfully",
+            data: clinic,
         });
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: "Lab fetching failed",
+            message: "Clinic fetching failed",
             error: error.message,
         });
     }
 };
-export const changeLabStatus = async (req, res) => {
+export const changeClinicStatus = async (req, res) => {
     try {
-        const lab = await labModel.findByIdAndUpdate(
+        const clinic = await clinicModel.findByIdAndUpdate(
             req.params.id,
          {
-            labStatus: req.body.labStatus,
+            clinicStatus: req.body.clinicStatus,
          },
          { new: true }
         );
         return res.status(200).json({
             success: true,
-            message: "Lab status changed successfully",
+            message: "Clinic status changed successfully",
             
         });
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: "Lab status changing failed",
+            message: "Clinic status changing failed",
             error: error.message,
         });
     }
 
-};
+};  
