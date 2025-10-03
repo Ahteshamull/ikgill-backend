@@ -46,6 +46,22 @@ const userRoleSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Lab",
     },
+    caseListAccess: {
+      type:Boolean,
+     default:false,
+    },
+    archivesAccess: {
+      type:Boolean,
+     default:false,
+    },
+    sendMessagesToDoctors: {
+      type:Boolean,
+     default:false,
+    },
+    qualityCheckPermission: {
+      type:Boolean,
+     default:false,
+    },
   },
   {
     timestamps: true,
