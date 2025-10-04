@@ -1,11 +1,12 @@
-// import express from "express";
+import express from "express";
+import { getMessages, getUsersForSidebar, sendMessage } from "../../controllers/message/message.js";
+import { upload } from "../../middlewares/imageControlMiddleware.js";
+import userAuthMiddleware from "../../middlewares/userAuthMiddleware.js";
 
-// import { getMessages, getUsersForSidebar, sendMessage } from "../../controllers/message/message.js";
+//localhost:3000/api/v1/message/send-message
+const router = express.Router();
+router.get("/users", userAuthMiddleware, getUsersForSidebar);
+router.get("/:id", userAuthMiddleware, getMessages);
+router.post("/send-message/:id", userAuthMiddleware, upload.any(), sendMessage);
 
-// //localhost:3000/api/v1/message/send-message
-// const router = express.Router();
-// router.get("/users",  getUsersForSidebar);
-// router.get("/:id",  getMessages);
-// router.post("/send-message/:id",  sendMessage);
-
-// export default router;
+export default router;

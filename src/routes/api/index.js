@@ -7,7 +7,7 @@ import admin from "./admin.js";
 import privacyPolicy from "./setting/privacyPolicy.js";
 import aboutUs from "./setting/aboutUs.js";
 import trams from "./setting/trams.js";
-// import message from "./message.js";
+import message from "./message.js";
 
 const router = express.Router();
 
@@ -30,5 +30,8 @@ router.use("/admin", admin);
 router.use("/setting", privacyPolicy);
 router.use("/setting", aboutUs);
 router.use("/setting", trams);
+
+// localhost:3000/api/v1/message/
+router.use("/message", message);
 
 export default router;

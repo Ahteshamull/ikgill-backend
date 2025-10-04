@@ -1,8 +1,8 @@
 import userModal from "../../models/auth/userModal.js";
 import Message from "../../models/message/message.js";
-import { getReceiverSocketId, io } from "../lib/socket.js";
+import { getReceiverSocketId, io } from "../../utils/socket.js";
 
-import cloudinary from "./../lib/cloudinary.js";
+
 
 export const getUsersForSidebar = async (req, res) => {
   try {
@@ -39,22 +39,19 @@ export const getMessages = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
   try {
-    const { text, image } = req.body;
+    const { text } = req.body;
     const { id: receiverId } = req.params;
     const senderId = req.user._id;
 
-    let imageUrl;
-    if (image) {
-      // Upload base64 image to cloudinary
-      const uploadResponse = await cloudinary.uploader.upload(image);
-      imageUrl = uploadResponse.secure_url;
-    }
+   const images = req.files?.map(
+     (item) => `${process.env.IMAGE_URL}${item.filename}`
+   );
 
     const newMessage = new Message({
       senderId,
       receiverId,
       text,
-      image: imageUrl,
+      image: images,
     });
 
     await newMessage.save();
