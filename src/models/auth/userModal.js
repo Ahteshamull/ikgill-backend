@@ -31,13 +31,9 @@ const userSchema = new Schema(
     image: {
       type: String,
     },
-    isVerify: {
-      type: Boolean,
-      default: false,
-    },
     role: {
       type: String,
-      enum: ["user", "admin"],
+      enum: [ "admin"],
       default: "user",
     },
     refreshToken: {

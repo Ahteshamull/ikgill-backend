@@ -40,19 +40,6 @@ export const signup = async (req, res) => {
           role,
         });
         await user.save();
-        let sendOtp = await userModel.findOneAndUpdate(
-          { email },
-          { $set: { otp: verifyCode } },
-          { new: true }
-        );
-        setTimeout(async () => {
-          let sendOtp = await userModel.findOneAndUpdate(
-            { email },
-            { $set: { otp: null } },
-            { new: true }
-          );
-        }, 120000);
-
         return res
           .status(201)
           .send({ success: true, message: "Signup Successfully", data: user });
