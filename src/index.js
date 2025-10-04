@@ -1,13 +1,12 @@
-import express from "express";
 import dotenv from "dotenv";
 import path from "path";
 import cookieParser from "cookie-parser";
 import dbConnect from "./config/database/dbConfig.js";
 import router from "./routes/index.js";
+import { app, server } from "./utils/socket.js";
+import express from "express";
 
 dotenv.config();
-
-const app = express();
 
 // Middlewares
 app.use(express.json());
@@ -23,4 +22,4 @@ dbConnect();
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`✅ Server running at ${PORT}`));
+server.listen(PORT, () => console.log(`✅ Server running at ${PORT}`));
