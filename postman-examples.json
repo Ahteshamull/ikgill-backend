@@ -1,0 +1,628 @@
+{
+  "examples": {
+    "1_standard_pfm_single_unit_crown": {
+      "caseType": "New",
+      "patientID": "P12345",
+      "gender": "Male",
+      "age": 35,
+      "scanNumber": "SCN001",
+      "selectedTier": "Standard",
+      "workCategory": "Crown/Bridge",
+      "standard_pfm": {
+        "singleUnitCrown": {
+          "porcelainButtMargin": "360",
+          "teeth": ["11", "12", "21"],
+          "shade": "A2",
+          "specialInstructions": "Please ensure proper margin fit",
+          "attachments": [
+            {
+              "fileUrl": "https://example.com/scan1.stl",
+              "fileName": "scan1.stl"
+            }
+          ]
+        }
+      },
+      "globalSpecialInstructions": "Rush order - needed by Friday",
+      "status": "Pending"
+    },
+
+    "2_standard_pfm_maryland_bridge": {
+      "caseType": "New",
+      "patientID": "P12346",
+      "gender": "Female",
+      "age": 28,
+      "scanNumber": "SCN002",
+      "selectedTier": "Standard",
+      "workCategory": "Crown/Bridge",
+      "standard_pfm": {
+        "marylandBridge": {
+          "ponticDesign": "Full ridge",
+          "ponticTeeth": ["11", "12"],
+          "wingTeeth": ["13", "21"],
+          "shade": "B1",
+          "specialInstructions": "Check occlusion carefully",
+          "attachments": [
+            {
+              "fileUrl": "https://example.com/scan2.stl",
+              "fileName": "scan2.stl"
+            }
+          ]
+        }
+      },
+      "globalSpecialInstructions": "Patient has sensitive gums",
+      "status": "Pending"
+    },
+
+    "3_standard_pfm_conventional_bridge": {
+      "caseType": "Continuation",
+      "caseNumber": "CASE-2024-001",
+      "patientID": "P12347",
+      "gender": "Male",
+      "age": 45,
+      "scanNumber": "SCN003",
+      "selectedTier": "Standard",
+      "workCategory": "Crown/Bridge",
+      "standard_pfm": {
+        "conventionalBridge": {
+          "ponticDesign": "Modify ridge lap",
+          "teeth": ["14", "15", "16", "17"],
+          "shade": "A3",
+          "specialInstructions": "Match existing shade",
+          "attachments": [
+            {
+              "fileUrl": "https://example.com/scan3.stl",
+              "fileName": "scan3.stl"
+            }
+          ]
+        }
+      },
+      "status": "Pending"
+    },
+
+    "4_standard_fullcast_single_unit_crown": {
+      "caseType": "New",
+      "patientID": "P12348",
+      "gender": "Female",
+      "age": 52,
+      "scanNumber": "SCN004",
+      "selectedTier": "Standard",
+      "workCategory": "Crown/Bridge",
+      "standard_fullCast": {
+        "materialType": "NP (silver coloured)",
+        "singleUnitCrown": {
+          "teeth": ["36", "37"],
+          "specialInstructions": "Standard fit",
+          "attachments": [
+            {
+              "fileUrl": "https://example.com/scan4.stl",
+              "fileName": "scan4.stl"
+            }
+          ]
+        }
+      },
+      "status": "Pending"
+    },
+
+    "5_standard_fullcast_bridge": {
+      "caseType": "New",
+      "patientID": "P12349",
+      "gender": "Male",
+      "age": 40,
+      "scanNumber": "SCN005",
+      "selectedTier": "Standard",
+      "workCategory": "Crown/Bridge",
+      "standard_fullCast": {
+        "materialType": "NP (silver coloured)",
+        "bridge": {
+          "teeth": ["46", "47"],
+          "specialInstructions": "Ensure proper contact points",
+          "attachments": []
+        }
+      },
+      "status": "Pending"
+    },
+
+    "6_standard_fullcast_post_and_core": {
+      "caseType": "New",
+      "patientID": "P12350",
+      "gender": "Female",
+      "age": 38,
+      "scanNumber": "SCN006",
+      "selectedTier": "Standard",
+      "workCategory": "Crown/Bridge",
+      "standard_fullCast": {
+        "materialType": "NP (silver coloured)",
+        "postAndCore": {
+          "teeth": ["21"],
+          "specialInstructions": "Root canal completed",
+          "attachments": []
+        }
+      },
+      "status": "Pending"
+    },
+
+    "7_standard_fullcast_conventional_bridge": {
+      "caseType": "New",
+      "patientID": "P12351",
+      "gender": "Male",
+      "age": 55,
+      "scanNumber": "SCN007",
+      "selectedTier": "Standard",
+      "workCategory": "Crown/Bridge",
+      "standard_fullCast": {
+        "materialType": "NP (silver coloured)",
+        "conventionalBridge": {
+          "ponticDesign": "Point contact",
+          "teeth": ["24", "25", "26"],
+          "specialInstructions": "Standard bridge design",
+          "attachments": []
+        }
+      },
+      "status": "Pending"
+    },
+
+    "8_standard_metal_free": {
+      "caseType": "New",
+      "patientID": "P12352",
+      "gender": "Female",
+      "age": 30,
+      "scanNumber": "SCN008",
+      "selectedTier": "Standard",
+      "workCategory": "Crown/Bridge",
+      "standard_metalFree": {
+        "type": "Composite Inlay/Onlay",
+        "teeth": ["16", "17"],
+        "specialInstructions": "Aesthetic match required",
+        "attachments": [
+          {
+            "fileUrl": "https://example.com/scan8.stl",
+            "fileName": "scan8.stl"
+          }
+        ]
+      },
+      "status": "Pending"
+    },
+
+    "9_standard_dentures_construction": {
+      "caseType": "New",
+      "patientID": "P12353",
+      "gender": "Male",
+      "age": 65,
+      "scanNumber": "SCN009",
+      "selectedTier": "Standard",
+      "workCategory": "Dentures",
+      "standard_dentures": {
+        "categoryType": "Denture Construction",
+        "construction": {
+          "dropdownOptions": ["Bite block", "Special Tray", "Try in", "Finish"],
+          "biteBlock": {
+            "upper": true,
+            "lower": true
+          },
+          "specialTray": {
+            "upper": true,
+            "lower": false
+          },
+          "clasps": 4,
+          "meshReinforcement": true,
+          "tryInMetalFrameworkCoCr": true,
+          "reTryIn": false,
+          "finishAcrylic": true,
+          "finishFlexi": false,
+          "teethSelection": ["11", "12", "13", "14", "15", "16"],
+          "shade": "A2",
+          "specialInstructions": "Patient prefers natural look",
+          "attachments": [
+            {
+              "fileUrl": "https://example.com/denture1.stl",
+              "fileName": "denture1.stl"
+            }
+          ]
+        }
+      },
+      "status": "Pending"
+    },
+
+    "10_standard_dentures_other": {
+      "caseType": "New",
+      "patientID": "P12354",
+      "gender": "Female",
+      "age": 70,
+      "scanNumber": "SCN010",
+      "selectedTier": "Standard",
+      "workCategory": "Dentures",
+      "standard_dentures": {
+        "categoryType": "Denture Other",
+        "other": {
+          "dropdownOptions": ["Reline"],
+          "teethSelection": ["21", "22", "23"],
+          "shade": "B2",
+          "specialInstructions": "Existing denture reline",
+          "attachments": []
+        }
+      },
+      "status": "Pending"
+    },
+
+    "11_premium_emax_single_unit_crown": {
+      "caseType": "New",
+      "patientID": "P12355",
+      "gender": "Female",
+      "age": 32,
+      "scanNumber": "SCN011",
+      "selectedTier": "Premium",
+      "premium_crownBridge": {
+        "subCategory": "Emax",
+        "emax": {
+          "type": "Single Unit Crown",
+          "teeth": ["11", "21"],
+          "shade2D": "A1",
+          "shade3D": "2M2",
+          "specialInstructions": "High aesthetic requirements",
+          "attachments": [
+            {
+              "fileUrl": "https://example.com/premium1.stl",
+              "fileName": "premium1.stl"
+            }
+          ]
+        }
+      },
+      "status": "Pending"
+    },
+
+    "12_premium_emax_veneer": {
+      "caseType": "New",
+      "patientID": "P12356",
+      "gender": "Female",
+      "age": 28,
+      "scanNumber": "SCN012",
+      "selectedTier": "Premium",
+      "premium_crownBridge": {
+        "subCategory": "Emax",
+        "emax": {
+          "type": "Veneer",
+          "teeth": ["11", "12", "21", "22"],
+          "shade2D": "BL1",
+          "shade3D": "1M1",
+          "specialInstructions": "Ultra-thin veneers for smile makeover",
+          "attachments": [
+            {
+              "fileUrl": "https://example.com/veneer.stl",
+              "fileName": "veneer.stl"
+            }
+          ]
+        }
+      },
+      "globalSpecialInstructions": "VIP patient - priority case",
+      "status": "Pending"
+    },
+
+    "13_premium_emax_maryland_bridge": {
+      "caseType": "New",
+      "patientID": "P12357",
+      "gender": "Male",
+      "age": 35,
+      "scanNumber": "SCN013",
+      "selectedTier": "Premium",
+      "premium_crownBridge": {
+        "subCategory": "Emax",
+        "emax": {
+          "type": "Maryland Bridge",
+          "teeth": ["12", "11", "21"],
+          "shade2D": "A2",
+          "shade3D": "2M2",
+          "specialInstructions": "Minimal prep design",
+          "attachments": []
+        }
+      },
+      "status": "Pending"
+    },
+
+    "14_premium_emax_conventional_bridge": {
+      "caseType": "New",
+      "patientID": "P12358",
+      "gender": "Female",
+      "age": 42,
+      "scanNumber": "SCN014",
+      "selectedTier": "Premium",
+      "premium_crownBridge": {
+        "subCategory": "Emax",
+        "emax": {
+          "type": "Conventional Bridge",
+          "teeth": ["14", "15", "16"],
+          "shade2D": "A3",
+          "shade3D": "3M2",
+          "specialInstructions": "Match adjacent teeth",
+          "attachments": [
+            {
+              "fileUrl": "https://example.com/bridge.stl",
+              "fileName": "bridge.stl"
+            }
+          ]
+        }
+      },
+      "status": "Pending"
+    },
+
+    "15_premium_zirconia_single_unit_crown": {
+      "caseType": "New",
+      "patientID": "P12359",
+      "gender": "Male",
+      "age": 48,
+      "scanNumber": "SCN015",
+      "selectedTier": "Premium",
+      "premium_crownBridge": {
+        "subCategory": "Zirconia",
+        "zirconia": {
+          "type": "Single Unit Crown",
+          "teeth": ["36", "37"],
+          "shade2D": "A3",
+          "shade3D": "3M3",
+          "specialInstructions": "High strength required for bruxism patient",
+          "attachments": []
+        }
+      },
+      "status": "Pending"
+    },
+
+    "16_premium_zirconia_veneer": {
+      "caseType": "New",
+      "patientID": "P12360",
+      "gender": "Female",
+      "age": 29,
+      "scanNumber": "SCN016",
+      "selectedTier": "Premium",
+      "premium_crownBridge": {
+        "subCategory": "Zirconia",
+        "zirconia": {
+          "type": "Veneer",
+          "teeth": ["11", "12", "13", "21", "22", "23"],
+          "shade2D": "BL2",
+          "shade3D": "1M2",
+          "specialInstructions": "Full smile design",
+          "attachments": [
+            {
+              "fileUrl": "https://example.com/zirconia_veneer.stl",
+              "fileName": "zirconia_veneer.stl"
+            }
+          ]
+        }
+      },
+      "status": "Pending"
+    },
+
+    "17_premium_metal_free_composite_onlay": {
+      "caseType": "New",
+      "patientID": "P12361",
+      "gender": "Male",
+      "age": 38,
+      "scanNumber": "SCN017",
+      "selectedTier": "Premium",
+      "premium_crownBridge": {
+        "subCategory": "Metal Free",
+        "metalFree": {
+          "teeth": ["16", "17", "26"],
+          "specialInstructions": "Composite onlay for posterior teeth",
+          "attachments": []
+        }
+      },
+      "status": "Pending"
+    },
+
+    "18_premium_dentures_construction": {
+      "caseType": "New",
+      "patientID": "P12362",
+      "gender": "Female",
+      "age": 68,
+      "scanNumber": "SCN018",
+      "selectedTier": "Premium",
+      "premium_dentures": {
+        "categoryType": "Denture Construction",
+        "construction": {
+          "dropdownOptions": ["Bite block", "Special Tray", "Try in metal framework CoCr", "Finish Acrylic"],
+          "biteBlock": {
+            "upper": true,
+            "lower": true
+          },
+          "specialTray": {
+            "upper": true,
+            "lower": true
+          },
+          "clasps": 6,
+          "meshReinforcement": true,
+          "tryInMetalFrameworkCoCr": true,
+          "reTryIn": true,
+          "finishAcrylic": true,
+          "finishFlexi": false,
+          "teethSelection": ["11", "12", "13", "14", "15", "16", "21", "22", "23", "24", "25", "26"],
+          "shade": "A2",
+          "specialInstructions": "Premium quality denture with natural aesthetics",
+          "attachments": [
+            {
+              "fileUrl": "https://example.com/premium_denture.stl",
+              "fileName": "premium_denture.stl"
+            }
+          ]
+        }
+      },
+      "status": "Pending"
+    },
+
+    "19_premium_implants": {
+      "caseType": "New",
+      "patientID": "P12363",
+      "gender": "Male",
+      "age": 50,
+      "scanNumber": "SCN019",
+      "selectedTier": "Premium",
+      "premium_implants": {
+        "asStandard": true,
+        "noPostCoreOption": true
+      },
+      "globalSpecialInstructions": "Implant supported restoration",
+      "status": "Pending"
+    },
+
+    "20_premium_orthodontic_fixed_retainer": {
+      "caseType": "New",
+      "patientID": "P12364",
+      "gender": "Female",
+      "age": 22,
+      "scanNumber": "SCN020",
+      "selectedTier": "Premium",
+      "premium_orthodontic": {
+        "type": "Fixed retainer"
+      },
+      "globalSpecialInstructions": "Post-orthodontic treatment",
+      "status": "Pending"
+    },
+
+    "21_premium_orthodontic_essix_retainer": {
+      "caseType": "New",
+      "patientID": "P12365",
+      "gender": "Male",
+      "age": 25,
+      "scanNumber": "SCN021",
+      "selectedTier": "Premium",
+      "premium_orthodontic": {
+        "type": "Essix retainer"
+      },
+      "globalSpecialInstructions": "Clear retainer for upper and lower",
+      "status": "Pending"
+    },
+
+    "22_misc_study_models": {
+      "caseType": "New",
+      "patientID": "P12366",
+      "gender": "Female",
+      "age": 30,
+      "scanNumber": "SCN022",
+      "selectedTier": "Standard",
+      "workCategory": "Misc",
+      "misc": {
+        "type": "Study models",
+        "studyModels": {
+          "diagnosticWax": true,
+          "selectedTeeth": ["11", "12", "13", "21", "22", "23"]
+        },
+        "specialInstructions": "Diagnostic wax-up for treatment planning",
+        "attachments": []
+      },
+      "status": "Pending"
+    },
+
+    "23_misc_sports_guard": {
+      "caseType": "New",
+      "patientID": "P12367",
+      "gender": "Male",
+      "age": 18,
+      "scanNumber": "SCN023",
+      "selectedTier": "Standard",
+      "workCategory": "Misc",
+      "misc": {
+        "type": "Sports Guard",
+        "sportsGuard": {
+          "colour": "Blue"
+        },
+        "specialInstructions": "Custom sports guard for rugby player",
+        "attachments": []
+      },
+      "status": "Pending"
+    },
+
+    "24_misc_tw_with_reservoirs": {
+      "caseType": "New",
+      "patientID": "P12368",
+      "gender": "Female",
+      "age": 35,
+      "scanNumber": "SCN024",
+      "selectedTier": "Standard",
+      "workCategory": "Misc",
+      "misc": {
+        "type": "T/W",
+        "tw": {
+          "withReservoirs": true,
+          "withoutReservoirs": false
+        },
+        "specialInstructions": "Teeth whitening tray with reservoirs",
+        "attachments": []
+      },
+      "status": "Pending"
+    },
+
+    "25_misc_night_guard_soft": {
+      "caseType": "New",
+      "patientID": "P12369",
+      "gender": "Male",
+      "age": 42,
+      "scanNumber": "SCN025",
+      "selectedTier": "Standard",
+      "workCategory": "Misc",
+      "misc": {
+        "type": "Night Guard",
+        "nightGuard": {
+          "material": "Soft",
+          "withReservoir": false,
+          "withoutReservoir": true
+        },
+        "specialInstructions": "Soft night guard for bruxism",
+        "attachments": []
+      },
+      "status": "Pending"
+    },
+
+    "26_misc_night_guard_hard": {
+      "caseType": "New",
+      "patientID": "P12370",
+      "gender": "Female",
+      "age": 38,
+      "scanNumber": "SCN026",
+      "selectedTier": "Standard",
+      "workCategory": "Misc",
+      "misc": {
+        "type": "Night Guard",
+        "nightGuard": {
+          "material": "Hard",
+          "withReservoir": true,
+          "withoutReservoir": false
+        },
+        "specialInstructions": "Hard night guard with reservoir",
+        "attachments": []
+      },
+      "status": "Pending"
+    },
+
+    "27_misc_vacuum_formed_splint": {
+      "caseType": "New",
+      "patientID": "P12371",
+      "gender": "Male",
+      "age": 45,
+      "scanNumber": "SCN027",
+      "selectedTier": "Standard",
+      "workCategory": "Misc",
+      "misc": {
+        "type": "Vacuum formed Splint",
+        "specialInstructions": "Vacuum formed splint for TMJ",
+        "attachments": []
+      },
+      "status": "Pending"
+    },
+
+    "28_misc_re_etch_crown_bridge": {
+      "caseType": "Remake",
+      "caseNumber": "CASE-2024-002",
+      "patientID": "P12372",
+      "gender": "Female",
+      "age": 50,
+      "scanNumber": "SCN028",
+      "selectedTier": "Standard",
+      "workCategory": "Misc",
+      "misc": {
+        "type": "Re-etch Crown/Bridge",
+        "specialInstructions": "Re-etch existing crown for better fit",
+        "attachments": []
+      },
+      "status": "Pending"
+    }
+  }
+}

@@ -8,7 +8,8 @@ import privacyPolicy from "./setting/privacyPolicy.js";
 import aboutUs from "./setting/aboutUs.js";
 import trams from "./setting/trams.js";
 import message from "./message.js";
-
+import cases from "./cases.js";
+    
 const router = express.Router();
 
 // localhost:3000/api/v1/auth/
@@ -33,5 +34,8 @@ router.use("/setting", trams);
 
 // localhost:3000/api/v1/message/
 router.use("/message", message);
+
+// localhost:3000/api/v1/case/
+router.use("/case", cases);
 
 export default router;
