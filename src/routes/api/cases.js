@@ -45,6 +45,6 @@ router.post("/add-note/:id", addNote); // Add note to case
 router.get("/get-cases-by-patient/:patientID", getCasesByPatient); // Get cases by patient
 
 // localhost:3000/api/v1/case/get-cases-by-clinic/:clinicId
-router.get("/get-cases-by-clinic/:clinicId", getCasesByClinic); // Get cases by clinic
+router.get("/get-cases-by-clinic/:clinicId", getCasesByClinic); 
 
 export default router;
