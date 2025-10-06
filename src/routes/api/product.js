@@ -6,12 +6,11 @@ import {
     updateProduct,
     deleteProduct,
 } from "../../controllers/product/product.js";
-import { upload } from "../../middlewares/imageControlMiddleware.js";
 
 const router = express.Router();
 
 // localhost:3000/api/v1/product/create-product
-router.post("/create-product", upload.any(), createProduct);
+router.post("/create-product", createProduct);
 
 // localhost:3000/api/v1/product/all-products
 router.get("/all-products", getAllProducts);
@@ -20,7 +19,7 @@ router.get("/all-products", getAllProducts);
 router.get("/single-product/:id", getProductById);
 
 // localhost:3000/api/v1/product/update-product/:id
-router.patch("/update-product/:id", upload.any(), updateProduct);
+router.patch("/update-product/:id", updateProduct);
 
 // localhost:3000/api/v1/product/delete-product/:id
 router.delete("/delete-product/:id", deleteProduct);

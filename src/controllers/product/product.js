@@ -1,22 +1,9 @@
 import Product from "../../models/product/product.js";
 
-// Create a new product with multiple images
+// Create a new product
 export const createProduct = async (req, res) => {
     try {
-        // Handle multiple image uploads
-        const images = req.files?.map((item) => ({
-            fileUrl: `${process.env.IMAGE_URL}${item.filename}`,
-            fileName: item.originalname,
-            uploadedAt: new Date(),
-        }));
-
-        // Prepare product data
-        const productData = {
-            ...req.body,
-            ...(images && images.length > 0 && { images }),
-        };
-
-        const product = await Product.create(productData);
+        const product = await Product.create(req.body);
         
         res.status(201).json({
             success: true,
@@ -92,23 +79,9 @@ export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Handle new image uploads
-        const newImages = req.files?.map((item) => ({
-            fileUrl: `${process.env.IMAGE_URL}${item.filename}`,
-            fileName: item.originalname,
-            uploadedAt: new Date(),
-        }));
-
-        const updateData = { ...req.body };
-        
-        // If new images uploaded, add them
-        if (newImages && newImages.length > 0) {
-            updateData.images = newImages;
-        }
-
         const product = await Product.findByIdAndUpdate(
             id,
-            { $set: updateData },
+            { $set: req.body },
             { new: true, runValidators: true }
         );
 

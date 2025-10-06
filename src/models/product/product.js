@@ -1,11 +1,5 @@
 import mongoose from "mongoose";
 
-const ProductImageSchema = new mongoose.Schema({
-    fileUrl: String,
-    fileName: String,
-    uploadedAt: { type: Date, default: Date.now },
-});
-
 const ProductSchema = new mongoose.Schema(
     {
         name: { type: String, required: true },
@@ -13,7 +7,6 @@ const ProductSchema = new mongoose.Schema(
         description: String,
         stock: { type: Number, default: 0, min: 0 },
         category: String,
-        images: [ProductImageSchema],
     },
     { timestamps: true }
 );
