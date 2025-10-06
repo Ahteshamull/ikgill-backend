@@ -10,6 +10,7 @@ import {
   addNote,
   getCasesByPatient,
   getCasesByClinic,
+  remakeCase,
 } from "../../controllers/case/case.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
 
@@ -26,6 +27,9 @@ router.get("/single-case/:id", getCaseById); // Get single case by ID
 
 // localhost:3000/api/v1/case/update-case/:id
 router.patch("/update-case/:id", updateCase); // Update case by ID
+
+// localhost:3000/api/v1/case/remake-case/:id
+router.put("/remake-case/:id", upload.any(), remakeCase); // Remake case by ID
 
 // localhost:3000/api/v1/case/delete-case/:id
 router.delete("/delete-case/:id", deleteCase); // Delete case by ID

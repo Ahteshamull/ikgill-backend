@@ -44,9 +44,23 @@ export const createCase = async (req, res) => {
       delete req.body.assignedTo;
     }
 
+    // Parse JSON string fields back to objects
+    const parsedBody = { ...req.body };
+    const fieldsToParseIfString = ['standard', 'premium'];
+    
+    fieldsToParseIfString.forEach(field => {
+      if (parsedBody[field] && typeof parsedBody[field] === 'string') {
+        try {
+          parsedBody[field] = JSON.parse(parsedBody[field]);
+        } catch (parseError) {
+          console.error(`Error parsing ${field}:`, parseError);
+        }
+      }
+    });
+
     // Prepare case data
     const caseDataToCreate = {
-      ...req.body,
+      ...parsedBody,
       // Add images to globalAttachments if files were uploaded
       ...(images && images.length > 0 && { globalAttachments: images }),
     };
@@ -177,9 +191,23 @@ export const updateCase = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Parse JSON string fields back to objects
+    const updateData = { ...req.body };
+    const fieldsToParseIfString = ['standard', 'premium'];
+    
+    fieldsToParseIfString.forEach(field => {
+      if (updateData[field] && typeof updateData[field] === 'string') {
+        try {
+          updateData[field] = JSON.parse(updateData[field]);
+        } catch (parseError) {
+          console.error(`Error parsing ${field}:`, parseError);
+        }
+      }
+    });
+
     const updatedCase = await Case.findByIdAndUpdate(
       id,
-      { $set: req.body },
+      { $set: updateData },
       { new: true, runValidators: true }
     )
       .populate("clinicId", "name email")
@@ -445,6 +473,111 @@ export const getCaseStats = async (req, res) => {
     res.status(500).json({ 
       success: false,
       error: error.message 
+    });
+  }
+};
+
+// Remake a case - Find case by ID, clear all data, and create new case
+export const remakeCase = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the existing case
+    const existingCase = await Case.findById(id);
+
+    if (!existingCase) {
+      return res.status(404).json({
+        success: false,
+        error: "Case not found",
+      });
+    }
+
+    // Handle optional image uploads
+    const images = req.files?.map((item) => ({
+      fileUrl: `${process.env.IMAGE_URL}${item.filename}`,
+      fileName: item.originalname,
+      uploadedAt: new Date(),
+    }));
+
+    // Parse JSON string fields back to objects
+    const parsedBody = { ...req.body };
+    const fieldsToParseIfString = ['standard', 'premium'];
+    
+    fieldsToParseIfString.forEach(field => {
+      if (parsedBody[field] && typeof parsedBody[field] === 'string') {
+        try {
+          parsedBody[field] = JSON.parse(parsedBody[field]);
+        } catch (parseError) {
+          console.error(`Error parsing ${field}:`, parseError);
+        }
+      }
+    });
+
+    // Validate ObjectId fields if provided
+    if (parsedBody.clinicId) {
+      if (!mongoose.Types.ObjectId.isValid(parsedBody.clinicId)) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid clinicId format",
+        });
+      }
+    }
+
+    if (parsedBody.assignedTo) {
+      if (!mongoose.Types.ObjectId.isValid(parsedBody.assignedTo)) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid assignedTo format",
+        });
+      }
+    }
+
+    // Remove empty ObjectId fields
+    if (parsedBody.clinicId === "" || parsedBody.clinicId === null) {
+      delete parsedBody.clinicId;
+    }
+    if (parsedBody.assignedTo === "" || parsedBody.assignedTo === null) {
+      delete parsedBody.assignedTo;
+    }
+
+    // Prepare new case data (clearing all old data)
+    const remakeData = {
+      ...parsedBody,
+      caseType: "Remake", // Set case type as Remake
+      // Add images to globalAttachments if files were uploaded
+      ...(images && images.length > 0 && { globalAttachments: images }),
+    };
+
+    // Update the case with new data (replacing all fields)
+    const remadeCase = await Case.findByIdAndUpdate(
+      id,
+      { $set: remakeData },
+      { new: true, runValidators: true, overwrite: false }
+    )
+      .populate("clinicId", "name email")
+      .populate("assignedTo", "name email");
+
+    res.status(200).json({
+      success: true,
+      message: "Case remade successfully",
+      data: remadeCase,
+    });
+  } catch (error) {
+    console.error("Error remaking case:", error);
+
+    // Handle validation errors
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        error: "Validation failed",
+        details: error.errors,
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      details: error.errors,
     });
   }
 };

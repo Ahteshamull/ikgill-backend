@@ -11,6 +11,13 @@ const NoteSchema = new mongoose.Schema({
   content: String,
   createdAt: { type: Date, default: Date.now },
 });
+const DenturesAcrylicSchema = new mongoose.Schema({
+  categoryType: {
+    type: String,
+    enum: ["Denture Construction", "Denture Other"],
+    required: true,
+  },
+});
 
 const CaseSchema = new mongoose.Schema(
   {
@@ -36,108 +43,152 @@ const CaseSchema = new mongoose.Schema(
       type: String,
       enum: ["Standard", "Premium"],
     },
-    workCategory: { type: String, enum: ["Crown/Bridge", "Dentures", "Misc"] },
+    
 
     // ======================
     // Standard Tier
     // ======================
     standard: {
-      pfm: {
-        singleUnitCrown: {
-          enabled: { type: Boolean, default: false },
-          porcelainButtMargin: { type: String, enum: ["360", "Buccal Only"] },
+      CrownBridge: {
+        pfm: {
+          singleUnitCrown: {
+            enabled: { type: Boolean, default: false },
+            porcelainButtMargin: { type: String, enum: ["360", "Buccal Only"] },
+            teeth: [String],
+            shade: String,
+            specialInstructions: String,
+            attachments: [AttachmentSchema],
+          },
+          marylandBridge: {
+            enabled: { type: Boolean, default: false },
+            ponticDesign: {
+              type: String,
+              enum: [
+                "Full ridge",
+                "Modify ridge lap",
+                "No contact",
+                "Point contact",
+                "Point in socket (ovate)",
+              ],
+            },
+            ponticTeeth: [String],
+            wingTeeth: [String],
+            shade: String,
+            specialInstructions: String,
+            attachments: [AttachmentSchema],
+          },
+          conventionalBridge: {
+            enabled: { type: Boolean, default: false },
+            ponticDesign: {
+              type: String,
+              enum: [
+                "Full ridge",
+                "Modify ridge lap",
+                "No contact",
+                "Point contact",
+                "Point in socket (ovate)",
+              ],
+            },
+            teeth: [String],
+            shade: String,
+            specialInstructions: String,
+            attachments: [AttachmentSchema],
+          },
+        },
+        fullCast: {
+          materialType: { type: String, enum: ["NP (silver coloured)"] },
+          singleUnitCrown: {
+            enabled: Boolean,
+            teeth: [String],
+            specialInstructions: String,
+            attachments: [AttachmentSchema],
+          },
+          bridge: {
+            enabled: Boolean,
+            teeth: [String],
+            specialInstructions: String,
+            attachments: [AttachmentSchema],
+          },
+          postAndCore: {
+            enabled: Boolean,
+            teeth: [String],
+            specialInstructions: String,
+            attachments: [AttachmentSchema],
+          },
+          conventionalBridge: {
+            enabled: Boolean,
+            ponticDesign: {
+              type: String,
+              enum: [
+                "Full ridge",
+                "Modify ridge lap",
+                "No contact",
+                "Point contact",
+                "Point in socket (ovate)",
+              ],
+            },
+            teeth: [String],
+            specialInstructions: String,
+            attachments: [AttachmentSchema],
+          },
+        },
+        metalFree: {
+          enabled: Boolean,
+          type: { type: String, enum: ["Composite Inlay/Onlay"] },
           teeth: [String],
-          shade: String,
           specialInstructions: String,
           attachments: [AttachmentSchema],
         },
-        marylandBridge: {
-          enabled: { type: Boolean, default: false },
-          ponticDesign: {
+        dentures: {
+          categoryType: {
             type: String,
-            enum: [
-              "Full ridge",
-              "Modify ridge lap",
-              "No contact",
-              "Point contact",
-              "Point in socket (ovate)",
-            ],
+            enum: ["Denture Construction", "Denture Other"],
           },
-          ponticTeeth: [String],
-          wingTeeth: [String],
-          shade: String,
-          specialInstructions: String,
-          attachments: [AttachmentSchema],
-        },
-        conventionalBridge: {
-          enabled: { type: Boolean, default: false },
-          ponticDesign: {
-            type: String,
-            enum: [
-              "Full ridge",
-              "Modify ridge lap",
-              "No contact",
-              "Point contact",
-              "Point in socket (ovate)",
+          construction: {
+            enabled: Boolean,
+            selectedOptions: [
+              {
+                type: String,
+                enum: [
+                  "Bite block",
+                  "Special Tray",
+                  "Clasps",
+                  "Mesh Reinforcement",
+                  "Try In",
+                  "Re-try in",
+                  "Finish",
+                ],
+              },
             ],
+            biteBlock: { upper: Boolean, lower: Boolean },
+            specialTray: { upper: Boolean, lower: Boolean },
+            clasps: { type: Number, min: 0 },
+            meshReinforcement: Boolean,
+            tryInMetalFrameworkCoCr: Boolean,
+            reTryIn: Boolean,
+            finishAcrylic: Boolean,
+            finishFlexi: Boolean,
+            teethSelection: [String],
+            shade: String,
+            specialInstructions: String,
+            attachments: [AttachmentSchema],
           },
-          teeth: [String],
-          shade: String,
-          specialInstructions: String,
-          attachments: [AttachmentSchema],
+          other: {
+            enabled: Boolean,
+            selectedOptions: [
+              { type: String, enum: ["Reline", "Repair", "Addition"] },
+            ],
+            teethSelection: [String],
+            shade: String,
+            specialInstructions: String,
+            attachments: [AttachmentSchema],
+          },
         },
       },
-      fullCast: {
-        materialType: { type: String, enum: ["NP (silver coloured)"] },
-        singleUnitCrown: {
-          enabled: Boolean,
-          teeth: [String],
-          specialInstructions: String,
-          attachments: [AttachmentSchema],
-        },
-        bridge: {
-          enabled: Boolean,
-          teeth: [String],
-          specialInstructions: String,
-          attachments: [AttachmentSchema],
-        },
-        postAndCore: {
-          enabled: Boolean,
-          teeth: [String],
-          specialInstructions: String,
-          attachments: [AttachmentSchema],
-        },
-        conventionalBridge: {
-          enabled: Boolean,
-          ponticDesign: {
-            type: String,
-            enum: [
-              "Full ridge",
-              "Modify ridge lap",
-              "No contact",
-              "Point contact",
-              "Point in socket (ovate)",
-            ],
-          },
-          teeth: [String],
-          specialInstructions: String,
-          attachments: [AttachmentSchema],
-        },
-      },
-      metalFree: {
-        enabled: Boolean,
-        type: { type: String, enum: ["Composite Inlay/Onlay"] },
-        teeth: [String],
-        specialInstructions: String,
-        attachments: [AttachmentSchema],
-      },
-      dentures: {
-        categoryType: {
-          type: String,
-          enum: ["Denture Construction", "Denture Other"],
-        },
+      Dentures: {
         construction: {
-          enabled: Boolean,
+          enabled: { type: Boolean, default: false },
+
           selectedOptions: [
             {
               type: String,
@@ -152,30 +203,54 @@ const CaseSchema = new mongoose.Schema(
               ],
             },
           ],
-          biteBlock: { upper: Boolean, lower: Boolean },
-          specialTray: { upper: Boolean, lower: Boolean },
+
+          biteBlock: {
+            upper: { type: Boolean, default: false },
+            lower: { type: Boolean, default: false },
+          },
+
+          specialTray: {
+            upper: { type: Boolean, default: false },
+            lower: { type: Boolean, default: false },
+          },
+
           clasps: { type: Number, min: 0 },
-          meshReinforcement: Boolean,
-          tryInMetalFrameworkCoCr: Boolean,
-          reTryIn: Boolean,
-          finishAcrylic: Boolean,
-          finishFlexi: Boolean,
+
+          meshReinforcement: { type: Boolean, default: false },
+
+          // Last three options — only one can be selected
+          tryIn: { type: Boolean, default: false },
+          reTryIn: { type: Boolean, default: false },
+          finish: { type: Boolean, default: false },
+
           teethSelection: [String],
           shade: String,
           specialInstructions: String,
           attachments: [AttachmentSchema],
         },
+
+        // -----------------------------
+        // DENTURE OTHER
+        // -----------------------------
         other: {
-          enabled: Boolean,
+          enabled: { type: Boolean, default: false },
+
           selectedOptions: [
-            { type: String, enum: ["Reline", "Repair", "Addition"] },
+            {
+              type: String,
+              enum: ["Reline", "Repair", "Addition"],
+            },
           ],
+
           teethSelection: [String],
           shade: String,
           specialInstructions: String,
           attachments: [AttachmentSchema],
         },
       },
+      Misc: {
+        type: Boolean, default: false,
+      }
     },
 
     // ======================
@@ -282,44 +357,39 @@ const CaseSchema = new mongoose.Schema(
         specialInstructions: String,
         attachments: [AttachmentSchema],
       },
-    },
-
-    // ======================
-    // Misc Section (Both Tiers)
-    // ======================
-    misc: {
-      enabled: Boolean,
-      type: {
-        type: String,
-        enum: [
-          "Study models",
-          "Sports Guard",
-          "TW",
-          "Night Guard",
-          "Vacuum formed Stent",
-          "Re-etch Crown/Bridge",
-        ],
+      misc: {
+        enabled: Boolean,
+        type: {
+          type: String,
+          enum: [
+            "Study models",
+            "Sports Guard",
+            "TW",
+            "Night Guard",
+            "Vacuum formed Stent",
+            "Re-etch Crown/Bridge",
+          ],
+        },
+        studyModels: { diagnosticWax: Boolean, selectedTeeth: [String] },
+        sportsGuard: { colour: String },
+        tw: { withReservoirs: Boolean, withoutReservoirs: Boolean },
+        nightGuard: {
+          material: { type: String, enum: ["Soft", "Hard", "Hard Acrylic"] },
+          withReservoir: Boolean,
+          withoutReservoir: Boolean,
+        },
+        specialInstructions: String,
+        attachments: [AttachmentSchema],
       },
-      studyModels: { diagnosticWax: Boolean, selectedTeeth: [String] },
-      sportsGuard: { colour: String },
-      tw: { withReservoirs: Boolean, withoutReservoirs: Boolean },
-      nightGuard: {
-        material: { type: String, enum: ["Soft", "Hard", "Hard Acrylic"] },
-        withReservoir: Boolean,
-        withoutReservoir: Boolean,
-      },
-      specialInstructions: String,
-      attachments: [AttachmentSchema],
     },
 
     // ======================
     // Common Fields
     // ======================
-    globalSpecialInstructions: String,
-    globalAttachments: [AttachmentSchema],
+    
     status: {
       type: String,
-      enum: ["Pending", "In Progress", "Completed", "Cancelled", "On Hold"],
+      enum: ["Pending", "Accepted", "In Progress", "Completed", "Archived"],
       default: "Pending",
     },
     priority: {
@@ -327,9 +397,12 @@ const CaseSchema = new mongoose.Schema(
       enum: ["Normal", "Urgent", "Rush"],
       default: "Normal",
     },
+    
     dueDate: Date,
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic" },
+    
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     notes: [NoteSchema],
   },
   { timestamps: true }

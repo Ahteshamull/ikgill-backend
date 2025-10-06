@@ -9,6 +9,7 @@ import aboutUs from "./setting/aboutUs.js";
 import trams from "./setting/trams.js";
 import message from "./message.js";
 import cases from "./cases.js";
+import notification from "./notification.js";
     
 const router = express.Router();
 
@@ -37,5 +38,8 @@ router.use("/message", message);
 
 // localhost:3000/api/v1/case/
 router.use("/case", cases);
+
+// localhost:3000/api/v1/notification/
+router.use("/notification", notification);
 
 export default router;
