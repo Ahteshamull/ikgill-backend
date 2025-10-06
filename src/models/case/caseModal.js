@@ -6,11 +6,7 @@ const AttachmentSchema = new mongoose.Schema({
   uploadedAt: { type: Date, default: Date.now },
 });
 
-const NoteSchema = new mongoose.Schema({
-  author: String,
-  content: String,
-  createdAt: { type: Date, default: Date.now },
-});
+
 const DenturesAcrylicSchema = new mongoose.Schema({
   categoryType: {
     type: String,
@@ -392,18 +388,11 @@ const CaseSchema = new mongoose.Schema(
       enum: ["Pending", "Accepted", "In Progress", "Completed", "Archived"],
       default: "Pending",
     },
-    priority: {
-      type: String,
-      enum: ["Normal", "Urgent", "Rush"],
-      default: "Normal",
-    },
-    
-    dueDate: Date,
-    assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic" },
-    
+   
+  
+    product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    notes: [NoteSchema],
+    
   },
   { timestamps: true }
 );
