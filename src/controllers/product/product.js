@@ -4,7 +4,7 @@ import Product from "../../models/product/product.js";
 export const createProduct = async (req, res) => {
     try {
         const product = await Product.create(req.body);
-        
+                
         res.status(201).json({
             success: true,
             message: "Product created successfully",
@@ -12,16 +12,6 @@ export const createProduct = async (req, res) => {
         });
     } catch (error) {
         console.error("Error creating product:", error);
-        
-        // Handle validation errors
-        if (error.name === "ValidationError") {
-            return res.status(400).json({
-                success: false,
-                error: "Validation failed",
-                details: error.errors,
-            });
-        }
-
         res.status(500).json({ 
             success: false,
             error: error.message 
@@ -32,12 +22,27 @@ export const createProduct = async (req, res) => {
 // Get all products
 export const getAllProducts = async (req, res) => {
     try {
-        const products = await Product.find().sort({ createdAt: -1 });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const totalProducts = await Product.countDocuments();
+        const products = await Product.find()
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 });
+
+        const totalPages = Math.ceil(totalProducts / limit);
         
         res.status(200).json({
             success: true,
-            count: products.length,
+            message: "Products fetched successfully",
             data: products,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                limit,
+            },
         });
     } catch (error) {
         console.error("Error fetching products:", error);

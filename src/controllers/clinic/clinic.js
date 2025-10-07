@@ -23,11 +23,27 @@ export const createClinic = async (req, res) => {
 };
 export const getClinic = async (req, res) => {
     try {
-        const clinic = await clinicModel.find();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const totalClinics = await clinicModel.countDocuments();
+        const clinic = await clinicModel.find()
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 });
+
+        const totalPages = Math.ceil(totalClinics / limit);
+
         return res.status(200).json({
             success: true,
             message: "Clinic fetched successfully",
-            data:  clinic,
+            data: clinic,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                limit,
+            },
         });
     } catch (error) {
         return res.status(500).json({

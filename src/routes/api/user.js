@@ -7,6 +7,8 @@ import {
   deleteUser,
   getAllUser,
   getSingleUser,
+  getUserCountByRole,
+  getUserRatioByMonth,
   updateUser,
 } from "../../controllers/user/user.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
@@ -29,6 +31,9 @@ router.patch("/change-user-image/:id", upload.any(), changeUserImage);
 
 router.get("/all-block-user-list", allBlockUserList);
 
+router.get("/user-count-by-role", getUserCountByRole);
+
+router.get("/user-ratio-by-month", getUserRatioByMonth);
 
 
 export default router;

@@ -24,10 +24,35 @@ export const createAdmin = async (req, res) => {
 
 export const getAllAdmin = async (req, res) => {
     try {
-        const admin = await Admin.find();
-        res.status(200).json(admin);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const totalAdmins = await Admin.countDocuments();
+        const admin = await Admin.find()
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 });
+
+        const totalPages = Math.ceil(totalAdmins / limit);
+
+        res.status(200).json({
+            success: true,
+            message: "Admins fetched successfully",
+            data: admin,
+            pagination: {
+                currentPage: page,
+                totalPages,
+               
+                limit,
+             
+            },
+        });
     } catch (error) {
-        res.status(500).json({ error: "Failed to get admin" });
+        res.status(500).json({ 
+            success: false,
+            error: "Failed to get admin" 
+        });
     }
 };
 
