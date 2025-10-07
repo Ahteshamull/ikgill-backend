@@ -7,13 +7,7 @@ const AttachmentSchema = new mongoose.Schema({
 });
 
 
-const DenturesAcrylicSchema = new mongoose.Schema({
-  categoryType: {
-    type: String,
-    enum: ["Denture Construction", "Denture Other"],
-    required: true,
-  },
-});
+
 
 const CaseSchema = new mongoose.Schema(
   {
