@@ -33,8 +33,8 @@ const ProductSchema = new mongoose.Schema(
           }
           return false;
         },
-        message: (props) =>
-          `${props.value} is not valid for ${props.instance.productTier} tier.`,
+        // Avoid referencing props.instance which can be undefined in some contexts
+        message: (props) => `${props.value} is not valid for the selected product tier.`,
       },
     },
     price: {

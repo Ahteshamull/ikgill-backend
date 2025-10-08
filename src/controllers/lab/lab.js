@@ -1,37 +1,60 @@
 import labModel from "../../models/lab/lab.js";
 
 export const createLab = async (req, res) => {
-    try {
-        const { name, email, details } = req.body;
-        const lab = await labModel.create({
-            name,
-            email,
-            details,
+  try {
+    const { name, email, details } = req.body;
+    // Prevent duplicate emails (normalize to lowercase + trim)
+    if (email) {
+      const exists = await labModel.exists({ email: email.trim().toLowerCase() });
+      if (exists) {
+        return res.status(400).json({
+          success: false,
+          message: "Lab email already exists",
+          field: "email",
         });
-        return res.status(201).json({
-            success: true,
-            message: "Lab created successfully",
-            data: lab,
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Lab creation failed",
-            error: error.message,
-        });
+      }
     }
+    const lab = await labModel.create({
+      name,
+      email: email?.trim().toLowerCase(),
+      details,
+    });
+    return res.status(201).json({
+      success: true,
+      message: "Lab created successfully",
+      data: lab,
+    });
+  } catch (error) {
+    if (error?.code === 11000 && error?.keyPattern?.email) {
+      return res.status(400).json({
+        success: false,
+        message: "Lab email already exists",
+        field: "email",
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: "Lab creation failed",
+      error: error.message,
+    });
+  }
 };
 export const getLab = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const { email } = req.query;
 
-        const totalLabs = await labModel.countDocuments();
-        const lab = await labModel.find()
-            .skip(skip)
-            .limit(limit)
-            .sort({ createdAt: -1 });
+    const filter = {};
+    if (email) {
+      filter.email = { $regex: email, $options: "i" };
+    }
+    const totalLabs = await labModel.countDocuments(filter);
+    const lab = await labModel.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
         const totalPages = Math.ceil(totalLabs / limit);
 
@@ -54,29 +77,50 @@ export const getLab = async (req, res) => {
     }
 };
 export const updateLab = async (req, res) => {
-    try {
-        const { name, email, details } = req.body;
-        const lab = await labModel.findByIdAndUpdate(
-            req.params.id,
-            {
-                name,
-                email,
-                details,
-            },
-            { new: true }
-        );
-        return res.status(200).json({
-            success: true,
-            message: "Lab updated successfully",
-            data: lab,
+  try {
+    const { name, email, details } = req.body;
+    // Ensure email uniqueness when updating (exclude current doc)
+    if (email) {
+      const exists = await labModel.exists({
+        email: email.trim().toLowerCase(),
+        _id: { $ne: req.params.id },
+      });
+      if (exists) {
+        return res.status(400).json({
+          success: false,
+          message: "Lab email already exists",
+          field: "email",
         });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Lab updating failed",
-            error: error.message,
-        });
+      }
     }
+    const lab = await labModel.findByIdAndUpdate(
+      req.params.id,
+      {
+        name,
+        email: email?.trim().toLowerCase(),
+        details,
+      },
+      { new: true }
+    );
+    return res.status(200).json({
+      success: true,
+      message: "Lab updated successfully",
+      data: lab,
+    });
+  } catch (error) {
+    if (error?.code === 11000 && error?.keyPattern?.email) {
+      return res.status(400).json({
+        success: false,
+        message: "Lab email already exists",
+        field: "email",
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: "Lab updating failed",
+      error: error.message,
+    });
+  }
 };
 export const deleteLab = async (req, res) => {
     try {
