@@ -62,6 +62,10 @@ const userRoleSchema = new Schema(
       type:Boolean,
      default:false,
     },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+    },
   },
   {
     timestamps: true,

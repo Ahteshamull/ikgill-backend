@@ -65,6 +65,27 @@ export const createCase = async (req, res) => {
       ...(images && images.length > 0 && { globalAttachments: images }),
     };
 
+    // Track which UserRole (e.g., dentist) created the case
+    if (!caseDataToCreate.createdByUserRole) {
+      caseDataToCreate.createdByUserRole = req.user?._id || parsedBody.createdByUserRole;
+    }
+
+    // Check if scanNumber is provided
+    if (parsedBody.scanNumber && parsedBody.scanNumber.trim() !== "") {
+      // If scanNumber exists, case goes to Admin (Pending)
+      caseDataToCreate.status = "Pending";
+      caseDataToCreate.adminApproval = {
+        status: "Pending",
+      };
+    } else {
+      // If no scanNumber, case goes directly to Lab Manager (Accepted)
+      caseDataToCreate.status = "Accepted";
+      caseDataToCreate.adminApproval = {
+        status: "Accepted",
+        approvedAt: new Date(),
+      };
+    }
+
     const caseData = await Case.create(caseDataToCreate);
     res.status(201).json({
       success: true,
@@ -337,53 +358,7 @@ export const assignCase = async (req, res) => {
   }
 };
 
-// Add a note to a case
-export const addNote = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { author, content } = req.body;
 
-    if (!author || !content) {
-      return res.status(400).json({
-        success: false,
-        error: "Author and content are required",
-      });
-    }
-
-    const updatedCase = await Case.findByIdAndUpdate(
-      id,
-      {
-        $push: {
-          notes: {
-            author,
-            content,
-            createdAt: new Date(),
-          },
-        },
-      },
-      { new: true }
-    );
-
-    if (!updatedCase) {
-      return res.status(404).json({ 
-        success: false,
-        error: "Case not found" 
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Note added successfully",
-      data: updatedCase,
-    });
-  } catch (error) {
-    console.error("Error adding note:", error);
-    res.status(500).json({ 
-      success: false,
-      error: error.message 
-    });
-  }
-};
 
 // Get cases by patient ID
 export const getCasesByPatient = async (req, res) => {
@@ -578,6 +553,319 @@ export const remakeCase = async (req, res) => {
       success: false,
       error: error.message,
       details: error.errors,
+    });
+  }
+};
+
+// Admin: Accept or Reject Case
+export const adminApproveCase = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { action, rejectionReason, adminId } = req.body;
+
+    if (!["accept", "reject"].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        error: "Action must be 'accept' or 'reject'",
+      });
+    }
+
+    if (action === "reject" && !rejectionReason) {
+      return res.status(400).json({
+        success: false,
+        error: "Rejection reason is required",
+      });
+    }
+
+    const updateData = {
+      "adminApproval.status": action === "accept" ? "Accepted" : "Rejected",
+      "adminApproval.approvedBy": adminId,
+      "adminApproval.approvedAt": new Date(),
+      status: action === "accept" ? "Accepted" : "Rejected",
+    };
+
+    if (action === "reject") {
+      updateData["adminApproval.rejectionReason"] = rejectionReason;
+    }
+
+    const updatedCase = await Case.findByIdAndUpdate(id, updateData, {
+      new: true,
+    })
+      .populate("adminApproval.approvedBy", "name email")
+      .populate("clinicId", "name email");
+
+    if (!updatedCase) {
+      return res.status(404).json({
+        success: false,
+        error: "Case not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Case ${action}ed successfully`,
+      data: updatedCase,
+    });
+  } catch (error) {
+    console.error("Error approving/rejecting case:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+// Lab Manager: Assign Case to Technician
+export const assignToTechnician = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { technicianId, labManagerId } = req.body;
+
+    if (!technicianId) {
+      return res.status(400).json({
+        success: false,
+        error: "Technician ID is required",
+      });
+    }
+
+    const caseData = await Case.findById(id);
+
+    if (!caseData) {
+      return res.status(404).json({
+        success: false,
+        error: "Case not found",
+      });
+    }
+
+    if (caseData.adminApproval.status !== "Accepted") {
+      return res.status(400).json({
+        success: false,
+        error: "Case must be accepted by admin first",
+      });
+    }
+
+    const updateData = {
+      assignedTechnician: technicianId,
+      "labManagerAssignment.assignedBy": labManagerId,
+      "labManagerAssignment.assignedAt": new Date(),
+      status: "In Progress",
+    };
+
+    const updatedCase = await Case.findByIdAndUpdate(id, updateData, {
+      new: true,
+    })
+      .populate("assignedTechnician", "name email role")
+      .populate("labManagerAssignment.assignedBy", "name email")
+      .populate("clinicId", "name email");
+
+    res.status(200).json({
+      success: true,
+      message: "Case assigned to technician successfully",
+      data: updatedCase,
+    });
+  } catch (error) {
+    console.error("Error assigning to technician:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+// Get Pending Cases for Admin
+export const getPendingCasesForAdmin = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
+
+    const cases = await Case.find({
+      "adminApproval.status": "Pending",
+      status: "Pending",
+    })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate("clinicId", "name email")
+      .populate("createdBy", "name email");
+
+    const total = await Case.countDocuments({
+      "adminApproval.status": "Pending",
+      status: "Pending",
+    });
+
+    res.status(200).json({
+      success: true,
+      data: cases,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        itemsPerPage: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching pending cases:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+// Get Accepted Cases for Lab Manager
+export const getAcceptedCasesForLabManager = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
+
+    const cases = await Case.find({
+      "adminApproval.status": "Accepted",
+      status: "Accepted",
+    })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate("clinicId", "name email")
+      .populate("adminApproval.approvedBy", "name email");
+
+    const total = await Case.countDocuments({
+      "adminApproval.status": "Accepted",
+      status: "Accepted",
+    });
+
+    res.status(200).json({
+      success: true,
+      data: cases,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        itemsPerPage: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching accepted cases:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+// Get Cases Assigned to Technician
+export const getCasesForTechnician = async (req, res) => {
+  try {
+    const { technicianId } = req.params;
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
+
+    const cases = await Case.find({
+      assignedTechnician: technicianId,
+      status: "In Progress",
+    })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate("clinicId", "name email")
+      .populate("labManagerAssignment.assignedBy", "name email");
+
+    const total = await Case.countDocuments({
+      assignedTechnician: technicianId,
+      status: "In Progress",
+    });
+
+    res.status(200).json({
+      success: true,
+      data: cases,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        itemsPerPage: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching technician cases:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+// Archive Cases Older Than 10 Days
+export const archiveOldCases = async (req, res) => {
+  try {
+    const tenDaysAgo = new Date();
+    tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+
+    const result = await Case.updateMany(
+      {
+        status: "Completed",
+        isArchived: false,
+        updatedAt: { $lte: tenDaysAgo },
+      },
+      {
+        $set: {
+          status: "Archived",
+          isArchived: true,
+          archiveDate: new Date(),
+        },
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: `${result.modifiedCount} cases archived successfully`,
+      data: {
+        archivedCount: result.modifiedCount,
+      },
+    });
+  } catch (error) {
+    console.error("Error archiving cases:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+// Get Archived Cases
+export const getArchivedCases = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
+
+    const cases = await Case.find({
+      isArchived: true,
+      status: "Archived",
+    })
+      .sort({ archiveDate: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate("clinicId", "name email")
+      .populate("assignedTechnician", "name email");
+
+    const total = await Case.countDocuments({
+      isArchived: true,
+      status: "Archived",
+    });
+
+    res.status(200).json({
+      success: true,
+      data: cases,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        itemsPerPage: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching archived cases:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
     });
   }
 };

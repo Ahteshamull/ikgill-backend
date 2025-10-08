@@ -7,10 +7,16 @@ import {
   deleteCase,
   updateCaseStatus,
   assignCase,
-  addNote,
   getCasesByPatient,
   getCasesByClinic,
   remakeCase,
+  adminApproveCase,
+  assignToTechnician,
+  getPendingCasesForAdmin,
+  getAcceptedCasesForLabManager,
+  getCasesForTechnician,
+  archiveOldCases,
+  getArchivedCases,
 } from "../../controllers/case/case.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
 
@@ -41,14 +47,33 @@ router.patch("/update-case-status/:id", updateCaseStatus); // Update case status
 // localhost:3000/api/v1/case/assign-case/:id
 router.patch("/assign-case/:id", assignCase); // Assign case to technician
 
-// localhost:3000/api/v1/case/add-note/:id
-router.post("/add-note/:id", addNote); // Add note to case
-
 // Query operations
 // localhost:3000/api/v1/case/get-cases-by-patient/:patientID
 router.get("/get-cases-by-patient/:patientID", getCasesByPatient); // Get cases by patient
 
 // localhost:3000/api/v1/case/get-cases-by-clinic/:clinicId
-router.get("/get-cases-by-clinic/:clinicId", getCasesByClinic); 
+router.get("/get-cases-by-clinic/:clinicId", getCasesByClinic);
+
+// Workflow Management Routes
+// localhost:3000/api/v1/case/admin-approve/:id
+router.patch("/admin-approve/:id", adminApproveCase); // Admin accept/reject case
+
+// localhost:3000/api/v1/case/assign-to-technician/:id
+router.patch("/assign-to-technician/:id", assignToTechnician); // Lab manager assigns to technician
+
+// localhost:3000/api/v1/case/pending-for-admin
+router.get("/pending-for-admin", getPendingCasesForAdmin); // Get pending cases for admin
+
+// localhost:3000/api/v1/case/accepted-for-lab-manager
+router.get("/accepted-for-lab-manager", getAcceptedCasesForLabManager); // Get accepted cases for lab manager
+
+// localhost:3000/api/v1/case/technician-cases/:technicianId
+router.get("/technician-cases/:technicianId", getCasesForTechnician); // Get cases for technician
+
+// localhost:3000/api/v1/case/archive-old-cases
+router.post("/archive-old-cases", archiveOldCases); // Archive cases older than 10 days
+
+// localhost:3000/api/v1/case/archived-cases
+router.get("/archived-cases", getArchivedCases); // Get archived cases
 
 export default router;

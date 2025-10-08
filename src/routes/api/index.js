@@ -10,7 +10,8 @@ import trams from "./setting/trams.js";
 import message from "./message.js";
 import cases from "./cases.js";
 import notification from "./notification.js";
-import product from "./product.js";    
+import product from "./product.js";
+import search from "./search.js";
 const router = express.Router();
 
 // localhost:3000/api/v1/auth/
@@ -44,5 +45,8 @@ router.use("/product", product);
 
 // localhost:3000/api/v1/notification/
 router.use("/notification", notification);
+
+// localhost:3000/api/v1/search/
+router.use("/search", search);
 
 export default router;

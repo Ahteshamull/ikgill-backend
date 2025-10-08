@@ -15,6 +15,7 @@ export const createUser = async (req, res) => {
       archivesAccess,
       sendMessagesToDoctors,
       qualityCheckPermission,
+      createdBy,
     } = req.body;
     const images = req.files.map(
       (item) => `${process.env.IMAGE_URL}${item.filename}`
@@ -31,6 +32,7 @@ export const createUser = async (req, res) => {
       archivesAccess,
       sendMessagesToDoctors,
       qualityCheckPermission,
+      createdBy: createdBy || req.user?._id, // Use provided createdBy or logged-in admin ID
     });
 
     return res.status(201).json({
@@ -51,12 +53,15 @@ export const getAllUser = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
+    
+    // Sort order: 'asc' for ascending, 'desc' for descending (default)
+    const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
 
     const totalUsers = await userRoleModel.countDocuments();
     const user = await userRoleModel.find()
       .skip(skip)
       .limit(limit)
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: sortOrder });
 
     const totalPages = Math.ceil(totalUsers / limit);
 
@@ -144,13 +149,9 @@ export const deleteUser = async (req, res) => {
 };
 export const changeUserStatus = async (req, res) => {
   try {
-    const user = await userRoleModel.findByIdAndUpdate(
-      req.params.id,
-      {
-        userStatus: req.body.userStatus,
-      },
-      
-    );
+    const user = await userRoleModel.findByIdAndUpdate(req.params.id, {
+      userStatus: req.body.userStatus,
+    });
     return res.status(200).json({
       success: true,
       message: "User status changed successfully",
@@ -193,8 +194,11 @@ export const allBlockUserList = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const totalBlockedUsers = await userRoleModel.countDocuments({ userStatus: "inactive" });
-    const user = await userRoleModel.find({ userStatus: "inactive" })
+    const totalBlockedUsers = await userRoleModel.countDocuments({
+      userStatus: "inactive",
+    });
+    const user = await userRoleModel
+      .find({ userStatus: "inactive" })
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });

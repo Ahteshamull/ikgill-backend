@@ -379,13 +379,38 @@ const CaseSchema = new mongoose.Schema(
     
     status: {
       type: String,
-      enum: ["Pending", "Accepted", "In Progress", "Completed", "Archived"],
+      enum: ["Pending", "Accepted", "Rejected", "In Progress", "Completed", "Archived"],
       default: "Pending",
     },
    
+    // Workflow Management
+    adminApproval: {
+      status: {
+        type: String,
+        enum: ["Pending", "Accepted", "Rejected"],
+        default: "Pending",
+      },
+      approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin" },
+      approvedAt: Date,
+      rejectionReason: String,
+    },
+
+    labManagerAssignment: {
+      assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: "UserRole" },
+      assignedAt: Date,
+    },
+
+    assignedTechnician: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "UserRole",
+    },
+
+    archiveDate: Date,
+    isArchived: { type: Boolean, default: false },
   
     product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    createdByUserRole: { type: mongoose.Schema.Types.ObjectId, ref: "UserRole" },
     
   },
   { timestamps: true }
