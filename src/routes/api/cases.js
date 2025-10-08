@@ -15,6 +15,7 @@ import {
   getAcceptedCasesForLabManager,
   getCasesForTechnician,
   getArchivedCases,
+  caseDownload,
 } from "../../controllers/case/case.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
 
@@ -28,6 +29,9 @@ router.get("/all-case", getAllCases); // Get all cases with filters
 
 // localhost:3000/api/v1/case/single-case/:id
 router.get("/single-case/:id", getCaseById); // Get single case by ID
+
+// localhost:3000/api/v1/case/download/:id
+router.get("/download/:id", caseDownload); // Download case as PDF (text + images)
 
 // localhost:3000/api/v1/case/update-case/:id
 router.patch("/update-case/:id", updateCase); // Update case by ID

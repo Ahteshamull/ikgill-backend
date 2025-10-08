@@ -2,6 +2,7 @@ import Case from "../../models/case/caseModal.js";
 import mongoose from "mongoose";
 import Notification from "../../models/notification/notification.js";
 import { io } from "../../utils/socket.js";
+// Note: Frontend will handle formatting/export (no server-side PDF)
 
 // Create a new case
 export const createCase = async (req, res) => {
@@ -848,6 +849,7 @@ export const getArchivedCases = async (req, res) => {
 
     res.status(200).json({
       success: true,
+
       data: cases,
       pagination: {
         currentPage: parseInt(page),
@@ -862,5 +864,16 @@ export const getArchivedCases = async (req, res) => {
       success: false,
       error: error.message,
     });
+  }
+};
+export const caseDownload = async (req, res) => {
+  try {
+    const caseData = await Case.findById(req.params.id).lean();
+    if (!caseData) {
+      return res.status(404).json({ success: false,message: "Case not found", error: "Case not found" });
+    }
+    return res.status(200).json({ success: true,message: "Case downloaded successfully", data: caseData });
+  } catch (error) {
+    return res.status(500).json({ success: false,message: "Case downloading failed", error: error.message });
   }
 };
