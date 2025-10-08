@@ -624,5 +624,102 @@
       },
       "status": "Pending"
     }
+  },
+  "endpoints": {
+    "auth": [
+      { "name": "Signup", "method": "POST", "url": "/api/v1/auth/signup", "body": {"name":"John Doe","email":"john@example.com","password":"Passw0rd!","role":"dentist","phone":"01700000000"} },
+      { "name": "Login", "method": "POST", "url": "/api/v1/auth/login", "body": {"email":"john@example.com","password":"Passw0rd!"} },
+      { "name": "Logout", "method": "POST", "url": "/api/v1/auth/logout" },
+      { "name": "Forgot Password", "method": "POST", "url": "/api/v1/auth/forgot-password", "body": {"email":"john@example.com"} },
+      { "name": "Verify Reset OTP", "method": "POST", "url": "/api/v1/auth/verify-reset-otp", "body": {"email":"john@example.com","otp":"123456"} },
+      { "name": "Reset Password", "method": "POST", "url": "/api/v1/auth/reset-password", "body": {"email":"john@example.com","otp":"123456","newPassword":"NewPassw0rd!"} },
+      { "name": "Refresh Token", "method": "POST", "url": "/api/v1/auth/refresh-token" }
+    ],
+    "cases": [
+      { "name": "Create Case", "method": "POST", "url": "/api/v1/case/create-case", "note": "multipart/form-data with files[]", "body": {"caseType":"New","patientID":"P10001","selectedTier":"Standard","productCategory":"Crown/Bridge"} },
+      { "name": "All Cases", "method": "GET", "url": "/api/v1/case/all-case?patientID=P100&caseType=Continuation&page=1&limit=10" },
+      { "name": "Single Case", "method": "GET", "url": "/api/v1/case/single-case/<caseId>" },
+      { "name": "Update Case", "method": "PATCH", "url": "/api/v1/case/update-case/<caseId>", "body": {"status":"In Progress"} },
+      { "name": "Remake Case", "method": "PUT", "url": "/api/v1/case/remake-case/<caseId>", "note": "multipart/form-data", "body": {"caseType":"Remake","reason":"Adjustment"} },
+      { "name": "Delete Case", "method": "DELETE", "url": "/api/v1/case/delete-case/<caseId>" },
+      { "name": "Update Case Status", "method": "PATCH", "url": "/api/v1/case/update-case-status/<caseId>", "body": {"status":"Completed"} },
+      { "name": "Cases By Patient", "method": "GET", "url": "/api/v1/case/get-cases-by-patient/P10001?caseType=Remake&page=1&limit=10" },
+      { "name": "Cases By Clinic", "method": "GET", "url": "/api/v1/case/get-cases-by-clinic/<clinicId>?page=1&limit=10" },
+      { "name": "Pending For Admin", "method": "GET", "url": "/api/v1/case/pending-for-admin?page=1&limit=10" },
+      { "name": "Accepted For Lab Manager", "method": "GET", "url": "/api/v1/case/accepted-for-lab-manager?page=1&limit=10" },
+      { "name": "Technician Cases", "method": "GET", "url": "/api/v1/case/technician-cases/<technicianId>?page=1&limit=10" },
+      { "name": "Archived Cases", "method": "GET", "url": "/api/v1/case/archived-cases?page=1&limit=10" },
+      { "name": "Download Case (raw)", "method": "GET", "url": "/api/v1/case/download/<caseId>" }
+    ],
+    "search": [
+      { "name": "Search Case by id", "method": "GET", "url": "/api/v1/search/case?id=<caseId>" },
+      { "name": "Search Case by patientID", "method": "GET", "url": "/api/v1/search/case?patientID=P10001" },
+      { "name": "Search Case by q", "method": "GET", "url": "/api/v1/search/case?q=SCN001" },
+      { "name": "Search User", "method": "GET", "url": "/api/v1/search/user?q=john" },
+      { "name": "Search Product", "method": "GET", "url": "/api/v1/search/product?q=crown" },
+      { "name": "Search Clinic", "method": "GET", "url": "/api/v1/search/clinic?q=dental" },
+      { "name": "Search Lab", "method": "GET", "url": "/api/v1/search/lab?q=lab" }
+    ],
+    "notification": [
+      { "name": "List Notifications", "method": "GET", "url": "/api/v1/notification/notify-list?receiverRole=admin&isRead=false&limit=20" },
+      { "name": "Mark Notification Read", "method": "PATCH", "url": "/api/v1/notification/mark-read/<notificationId>" }
+    ],
+    "clinic": [
+      { "name": "Create Clinic", "method": "POST", "url": "/api/v1/clinic/create-clinic", "body": {"name":"ABC Dental","email":"info@abcdental.com","details":"Main branch"} },
+      { "name": "Get Clinics (filter)", "method": "GET", "url": "/api/v1/clinic/get-clinic?email=gmail.com&page=1&limit=10" },
+      { "name": "Update Clinic", "method": "PUT", "url": "/api/v1/clinic/update-clinic/<clinicId>", "body": {"name":"ABC Dental Updated","email":"contact@abcdental.com","details":"Updated"} },
+      { "name": "Single Clinic", "method": "GET", "url": "/api/v1/clinic/single-clinic/<clinicId>" },
+      { "name": "Delete Clinic", "method": "DELETE", "url": "/api/v1/clinic/delete-clinic/<clinicId>" },
+      { "name": "Change Clinic Status", "method": "PATCH", "url": "/api/v1/clinic/change-clinic-status/<clinicId>", "body": {"clinicStatus":"Active"} }
+    ],
+    "lab": [
+      { "name": "Create Lab", "method": "POST", "url": "/api/v1/lab/create-lab", "body": {"name":"XYZ Lab","email":"contact@xyzlab.com","details":"Crown & Bridge"} },
+      { "name": "Get Labs (filter)", "method": "GET", "url": "/api/v1/lab/get-lab?email=xyz&page=1&limit=10" },
+      { "name": "Update Lab", "method": "PUT", "url": "/api/v1/lab/update-lab/<labId>", "body": {"name":"XYZ Lab Updated","email":"hello@xyzlab.com","details":"Updated"} },
+      { "name": "Single Lab", "method": "GET", "url": "/api/v1/lab/single-lab/<labId>" },
+      { "name": "Delete Lab", "method": "DELETE", "url": "/api/v1/lab/delete-lab/<labId>" },
+      { "name": "Change Lab Status", "method": "PATCH", "url": "/api/v1/lab/change-lab-status/<labId>", "body": {"labStatus":"Active"} }
+    ],
+    "product": [
+      { "name": "Create Product", "method": "POST", "url": "/api/v1/product/create-product", "body": {"name":"Zirconia Crown","productTier":"Premium","productType":"Crown/Bridge","price":120} },
+      { "name": "All Products", "method": "GET", "url": "/api/v1/product/all-products?page=1&limit=10" },
+      { "name": "Single Product", "method": "GET", "url": "/api/v1/product/single-product/<productId>" },
+      { "name": "Update Product", "method": "PATCH", "url": "/api/v1/product/update-product/<productId>", "body": {"price":140} },
+      { "name": "Delete Product", "method": "DELETE", "url": "/api/v1/product/delete-product/<productId>" }
+    ],
+    "user": [
+      { "name": "Create User", "method": "POST", "url": "/api/v1/user/create-user", "note": "multipart/form-data", "body": {"name":"Tech One","email":"tech1@example.com","password":"Passw0rd!","role":"technician"} },
+      { "name": "Update User", "method": "PUT", "url": "/api/v1/user/update-user/<userId>", "note": "multipart/form-data", "body": {"name":"Tech One Updated"} },
+      { "name": "All Users", "method": "GET", "url": "/api/v1/user/get-all-user?page=1&limit=10" },
+      { "name": "Single User", "method": "GET", "url": "/api/v1/user/get-user/<userId>" },
+      { "name": "Delete User", "method": "DELETE", "url": "/api/v1/user/delete-user/<userId>" },
+      { "name": "Change User Status", "method": "PATCH", "url": "/api/v1/user/change-user-status/<userId>", "body": {"status":"active"} },
+      { "name": "Change User Image", "method": "PATCH", "url": "/api/v1/user/change-user-image/<userId>", "note": "multipart/form-data" },
+      { "name": "All Blocked Users", "method": "GET", "url": "/api/v1/user/all-block-user-list" },
+      { "name": "User Count By Role", "method": "GET", "url": "/api/v1/user/user-count-by-role" },
+      { "name": "User Ratio By Month", "method": "GET", "url": "/api/v1/user/user-ratio-by-month" }
+    ],
+    "admin": [
+      { "name": "Create Admin", "method": "POST", "url": "/api/v1/admin/create-admin", "note": "superAdminMiddleware + multipart/form-data", "body": {"name":"Site Admin","email":"admin@example.com","password":"Passw0rd!"} },
+      { "name": "All Admin", "method": "GET", "url": "/api/v1/admin/all-admin" },
+      { "name": "Single Admin", "method": "GET", "url": "/api/v1/admin/single-admin/<adminId>" },
+      { "name": "Delete Admin", "method": "DELETE", "url": "/api/v1/admin/delete-admin/<adminId>" }
+    ],
+    "message": [
+      { "name": "Users For Sidebar", "method": "GET", "url": "/api/v1/message/users" },
+      { "name": "Get Messages", "method": "GET", "url": "/api/v1/message/<userId>" },
+      { "name": "Send Message", "method": "POST", "url": "/api/v1/message/send-message/<userId>", "note": "multipart/form-data", "body": {"message":"Hello"} }
+    ],
+    "settings": [
+      { "name": "Create About Us", "method": "POST", "url": "/api/v1/setting/create-about-us", "note": "multipart/form-data", "body": {"title":"About Us","content":"..."} },
+      { "name": "Get About Us", "method": "GET", "url": "/api/v1/setting/about-us/<id>" },
+      { "name": "Update About Us", "method": "PUT", "url": "/api/v1/setting/update-about-us/<id>", "note": "multipart/form-data" },
+      { "name": "Create Privacy Policy", "method": "POST", "url": "/api/v1/setting/create-privacy-policy", "note": "multipart/form-data", "body": {"title":"Privacy","content":"..."} },
+      { "name": "Get Privacy Policy", "method": "GET", "url": "/api/v1/setting/privacy-policy/<id>" },
+      { "name": "Update Privacy Policy", "method": "PUT", "url": "/api/v1/setting/update-privacy-policy/<id>", "note": "multipart/form-data" },
+      { "name": "Create Terms (Trams)", "method": "POST", "url": "/api/v1/setting/create-trams", "note": "multipart/form-data", "body": {"title":"Terms","content":"..."} },
+      { "name": "Get Terms (Trams)", "method": "GET", "url": "/api/v1/setting/trams/<id>" },
+      { "name": "Update Terms (Trams)", "method": "PUT", "url": "/api/v1/setting/update-trams/<id>", "note": "multipart/form-data" }
+    ]
   }
 }
