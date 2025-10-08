@@ -1,5 +1,7 @@
 import Case from "../../models/case/caseModal.js";
 import mongoose from "mongoose";
+import Notification from "../../models/notification/notification.js";
+import { io } from "../../utils/socket.js";
 
 // Create a new case
 export const createCase = async (req, res) => {
@@ -87,6 +89,31 @@ export const createCase = async (req, res) => {
     }
 
     const caseData = await Case.create(caseDataToCreate);
+
+    // Create a notification for admins when a case is created
+    try {
+      const notif = await Notification.create({
+        type: "case_created",
+        title: "New Case Created",
+        message: `Case ${caseData.caseNumber || caseData._id} created`,
+        caseId: caseData._id,
+        createdBy: caseData.createdBy || req.user?._id,
+        receiverRole: "admin",
+      });
+      // Emit realtime notification (broadcast). Adjust targeting if you track admin socket IDs.
+      io.emit("notification", {
+        _id: notif._id,
+        type: notif.type,
+        title: notif.title,
+        message: notif.message,
+        caseId: notif.caseId,
+        receiverRole: notif.receiverRole,
+        createdAt: notif.createdAt,
+      });
+    } catch (notifyErr) {
+      console.error("Error creating case notification:", notifyErr);
+    }
+
     res.status(201).json({
       success: true,
       message: "Case created successfully",
@@ -324,40 +351,6 @@ export const updateCaseStatus = async (req, res) => {
     });
   }
 };
-
-// Assign case to a technician
-export const assignCase = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { assignedTo } = req.body;
-
-    const updatedCase = await Case.findByIdAndUpdate(
-      id,
-      { assignedTo },
-      { new: true }
-    ).populate("assignedTo", "name email role");
-
-    if (!updatedCase) {
-      return res.status(404).json({ 
-        success: false,
-        error: "Case not found" 
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Case assigned successfully",
-      data: updatedCase,
-    });
-  } catch (error) {
-    console.error("Error assigning case:", error);
-    res.status(500).json({ 
-      success: false,
-      error: error.message 
-    });
-  }
-};
-
 
 
 // Get cases by patient ID
@@ -601,10 +594,18 @@ export const adminApproveCase = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    // Return data only when action is accept; omit data on reject
+    if (action === "accept") {
+      return res.status(200).json({
+        success: true,
+        message: `Case ${action}ed successfully`,
+        data: updatedCase,
+      });
+    }
+
+    return res.status(200).json({
       success: true,
       message: `Case ${action}ed successfully`,
-      data: updatedCase,
     });
   } catch (error) {
     console.error("Error approving/rejecting case:", error);
@@ -786,43 +787,6 @@ export const getCasesForTechnician = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching technician cases:", error);
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
-};
-
-// Archive Cases Older Than 10 Days
-export const archiveOldCases = async (req, res) => {
-  try {
-    const tenDaysAgo = new Date();
-    tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
-
-    const result = await Case.updateMany(
-      {
-        status: "Completed",
-        isArchived: false,
-        updatedAt: { $lte: tenDaysAgo },
-      },
-      {
-        $set: {
-          status: "Archived",
-          isArchived: true,
-          archiveDate: new Date(),
-        },
-      }
-    );
-
-    res.status(200).json({
-      success: true,
-      message: `${result.modifiedCount} cases archived successfully`,
-      data: {
-        archivedCount: result.modifiedCount,
-      },
-    });
-  } catch (error) {
-    console.error("Error archiving cases:", error);
     res.status(500).json({
       success: false,
       error: error.message,

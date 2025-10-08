@@ -6,7 +6,6 @@ import {
   updateCase,
   deleteCase,
   updateCaseStatus,
-  assignCase,
   getCasesByPatient,
   getCasesByClinic,
   remakeCase,
@@ -15,7 +14,6 @@ import {
   getPendingCasesForAdmin,
   getAcceptedCasesForLabManager,
   getCasesForTechnician,
-  archiveOldCases,
   getArchivedCases,
 } from "../../controllers/case/case.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
@@ -44,9 +42,6 @@ router.delete("/delete-case/:id", deleteCase); // Delete case by ID
 // localhost:3000/api/v1/case/update-case-status/:id
 router.patch("/update-case-status/:id", updateCaseStatus); // Update case status
 
-// localhost:3000/api/v1/case/assign-case/:id
-router.patch("/assign-case/:id", assignCase); // Assign case to technician
-
 // Query operations
 // localhost:3000/api/v1/case/get-cases-by-patient/:patientID
 router.get("/get-cases-by-patient/:patientID", getCasesByPatient); // Get cases by patient
@@ -69,9 +64,6 @@ router.get("/accepted-for-lab-manager", getAcceptedCasesForLabManager); // Get a
 
 // localhost:3000/api/v1/case/technician-cases/:technicianId
 router.get("/technician-cases/:technicianId", getCasesForTechnician); // Get cases for technician
-
-// localhost:3000/api/v1/case/archive-old-cases
-router.post("/archive-old-cases", archiveOldCases); // Archive cases older than 10 days
 
 // localhost:3000/api/v1/case/archived-cases
 router.get("/archived-cases", getArchivedCases); // Get archived cases

@@ -372,18 +372,16 @@ const CaseSchema = new mongoose.Schema(
         attachments: [AttachmentSchema],
       },
     },
-
     // ======================
     // Common Fields
     // ======================
     
+    clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic" },
     status: {
       type: String,
       enum: ["Pending", "Accepted", "Rejected", "In Progress", "Completed", "Archived"],
       default: "Pending",
     },
-   
-    // Workflow Management
     adminApproval: {
       status: {
         type: String,
@@ -401,6 +399,11 @@ const CaseSchema = new mongoose.Schema(
     },
 
     assignedTechnician: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "UserRole",
+    },
+    // Controllers also use `assignedTo`
+    assignedTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "UserRole",
     },
