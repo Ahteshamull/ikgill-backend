@@ -15,18 +15,13 @@ const CaseSchema = new mongoose.Schema(
     // Basic Information
     // ======================
     caseType: {
-      type: String,
       enum: ["New", "Continuation", "Remake"],
     },
     caseNumber: {
       type: String,
     },
-    patientID: { type: String, trim: true },
-    gender: { type: String, enum: ["Male", "Female"] },
-    age: { type: Number, min: 1, max: 150 },
-    scanNumber: { type: String, trim: true },
+    patientID: { type: String, trim: true, unique: true, index: true },
 
-    // ======================
     // Tier Selection
     // ======================
     selectedTier: {
@@ -420,7 +415,7 @@ const CaseSchema = new mongoose.Schema(
 );
 
 // Indexes
-CaseSchema.index({ patientID: 1 });
+CaseSchema.index({ patientID: 1 }, { unique: true });
 CaseSchema.index({ caseNumber: 1 });
 CaseSchema.index({ status: 1 });
 CaseSchema.index({ selectedTier: 1 });

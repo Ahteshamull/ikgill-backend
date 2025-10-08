@@ -67,6 +67,18 @@ export const createCase = async (req, res) => {
       ...(images && images.length > 0 && { globalAttachments: images }),
     };
 
+    // Enforce unique patientID at create-time
+    if (caseDataToCreate.patientID) {
+      const exists = await Case.exists({ patientID: caseDataToCreate.patientID });
+      if (exists) {
+        return res.status(400).json({
+          success: false,
+          error: "Duplicate patientID",
+          message: `patientID '${caseDataToCreate.patientID}' already exists`,
+        });
+      }
+    }
+
     // Track which UserRole (e.g., dentist) created the case
     if (!caseDataToCreate.createdByUserRole) {
       caseDataToCreate.createdByUserRole = req.user?._id || parsedBody.createdByUserRole;
@@ -159,6 +171,7 @@ export const getAllCases = async (req, res) => {
       patientID,
       caseNumber,
       clinicId,
+      caseType,
       sortBy = "createdAt",
       sortOrder = "desc",
     } = req.query;
@@ -170,6 +183,7 @@ export const getAllCases = async (req, res) => {
     if (patientID) filter.patientID = new RegExp(patientID, "i");
     if (caseNumber) filter.caseNumber = new RegExp(caseNumber, "i");
     if (clinicId) filter.clinicId = clinicId;
+    if (caseType) filter.caseType = caseType; // New | Continuation | Remake
 
     // Calculate pagination
     const skip = (page - 1) * limit;
@@ -357,16 +371,33 @@ export const updateCaseStatus = async (req, res) => {
 export const getCasesByPatient = async (req, res) => {
   try {
     const { patientID } = req.params;
+    const { caseType, page = 1, limit = 10 } = req.query;
 
-    const cases = await Case.find({ patientID })
-      .sort({ createdAt: -1 })
-      .populate("clinicId", "name")
-      .populate("assignedTo", "name");
+    const filter = { patientID };
+    if (caseType) filter.caseType = caseType; // New | Continuation | Remake
+
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      Case.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit))
+        .populate("clinicId", "name")
+        .populate("assignedTo", "name"),
+      Case.countDocuments(filter),
+    ]);
 
     res.status(200).json({
       success: true,
-      count: cases.length,
-      data: cases,
+      count: items.length,
+      data: items,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        itemsPerPage: parseInt(limit),
+      },
     });
   } catch (error) {
     console.error("Error fetching patient cases:", error);
