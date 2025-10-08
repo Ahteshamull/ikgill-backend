@@ -6,9 +6,6 @@ const AttachmentSchema = new mongoose.Schema({
   uploadedAt: { type: Date, default: Date.now },
 });
 
-
-
-
 const CaseSchema = new mongoose.Schema(
   {
     // ======================
@@ -20,7 +17,7 @@ const CaseSchema = new mongoose.Schema(
     caseNumber: {
       type: String,
     },
-    patientID: { type: String, trim: true, unique: true, index: true },
+    patientID: { type: String, trim: true, unique: true },
 
     // Tier Selection
     // ======================
@@ -28,7 +25,6 @@ const CaseSchema = new mongoose.Schema(
       type: String,
       enum: ["Standard", "Premium"],
     },
-    
 
     // ======================
     // Standard Tier
@@ -234,8 +230,9 @@ const CaseSchema = new mongoose.Schema(
         },
       },
       Misc: {
-        type: Boolean, default: false,
-      }
+        type: Boolean,
+        default: false,
+      },
     },
 
     // ======================
@@ -370,11 +367,18 @@ const CaseSchema = new mongoose.Schema(
     // ======================
     // Common Fields
     // ======================
-    
+
     clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic" },
     status: {
       type: String,
-      enum: ["Pending", "Accepted", "Rejected", "In Progress", "Completed", "Archived"],
+      enum: [
+        "Pending",
+        "Accepted",
+        "Rejected",
+        "In Progress",
+        "Completed",
+        "Archived",
+      ],
       default: "Pending",
     },
     adminApproval: {
@@ -405,17 +409,18 @@ const CaseSchema = new mongoose.Schema(
 
     archiveDate: Date,
     isArchived: { type: Boolean, default: false },
-  
+
     product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    createdByUserRole: { type: mongoose.Schema.Types.ObjectId, ref: "UserRole" },
-    
+    createdByUserRole: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "UserRole",
+    },
   },
   { timestamps: true }
 );
 
 // Indexes
-CaseSchema.index({ patientID: 1 }, { unique: true });
 CaseSchema.index({ caseNumber: 1 });
 CaseSchema.index({ status: 1 });
 CaseSchema.index({ selectedTier: 1 });
