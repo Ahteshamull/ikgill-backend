@@ -177,7 +177,7 @@ export const forgotPassword = async (req, res) => {
     console.error("OTP send failed:", err);
     return res
       .status(500)
-      .json({ error: true, message: "Failed to send OTP", error: err });
+      .json({ error: true,  error: err });
   }
 };
 
