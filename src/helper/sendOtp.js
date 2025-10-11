@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 class SendOtp {
   constructor() {
@@ -25,17 +26,17 @@ class SendOtp {
     ).replace(/\s+/g, "");
     const emailUser = process.env.OTP_EMAIL || process.env.EMAIL_USER;
 
-    // Debug logging
-    console.log("📧 Email Configuration Debug:");
-    console.log("- Service:", service);
-    console.log(
-      "- Email User:",
-      emailUser ? `${emailUser.substring(0, 3)}***` : "NOT SET"
-    );
-    console.log(
-      "- Email Password:",
-      emailPassword ? `${emailPassword.substring(0, 4)}***` : "NOT SET"
-    );
+    // // Debug logging
+    // console.log("📧 Email Configuration Debug:");
+    // console.log("- Service:", service);
+    // console.log(
+    //   "- Email User:",
+    //   emailUser ? `${emailUser.substring(0, 3)}***` : "NOT SET"
+    // );
+    // console.log(
+    //   "- Email Password:",
+    //   emailPassword ? `${emailPassword.substring(0, 4)}***` : "NOT SET"
+    // );
 
     if (!emailUser || !emailPassword) {
       console.error("❌ ERROR: Email credentials are missing!");
@@ -82,7 +83,8 @@ class SendOtp {
   async sendTestEmail(toEmail) {
     try {
       const transporter = this.getTransporter();
-      const result = await transporter.sendMail({
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      const result = await transporter.resend.emails.send({
         from:
           process.env.EMAIL_FROM ||
           process.env.OTP_EMAIL ||
@@ -107,6 +109,7 @@ class SendOtp {
   }
 
   async sendOTPEmail(email, otp, userName = "User") {
+    
     const mailOptions = {
       from:
         process.env.EMAIL_FROM ||
@@ -253,7 +256,7 @@ Security Notice:
 
     try {
       const transporter = this.getTransporter();
-      const info = await transporter.sendMail(mailOptions);
+      const info = await transporter.resend.emails.send(mailOptions);
       console.log("OTP email sent successfully:", info.messageId);
       return { success: true, messageId: info.messageId };
     } catch (error) {
