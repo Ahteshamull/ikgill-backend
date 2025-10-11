@@ -266,7 +266,7 @@ Security Notice:
 
     try {
       if (process.env.RESEND_API_KEY) {
-        const resend = new Resend(process.env.RESEND_API_KEY);
+        const resend = new Resend(process.env.EMAil_SEND);
         const info = await resend.emails.send({
           from: mailOptions.from,
           to: mailOptions.to,
