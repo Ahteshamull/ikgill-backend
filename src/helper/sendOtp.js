@@ -200,7 +200,7 @@ class SendOtp {
             </div>
             <div class="content">
               <h2>Hello ${userName}!</h2>
-              <p>We received a request to reset your password for your Flexitech account.</p>
+              <p>We received a request to reset your password for your Tdk Lab account.</p>
  
               <div class="otp-box">
                 <p><strong>Your OTP Code:</strong></p>
@@ -222,19 +222,19 @@ class SendOtp {
               <p>If you're having trouble, contact our support team.</p>
             </div>
             <div class="footer">
-              <p>This is an automated email from Flexitech</p>
-              <p>© ${new Date().getFullYear()} Flexitech. All rights reserved.</p>
+              <p>This is an automated email from Tdk Lab</p>
+              <p>© ${new Date().getFullYear()} Tdk Lab. All rights reserved.</p>
             </div>
           </div>
         </body>
         </html>
       `,
       text: `
-Password Reset OTP - Flexitech
+Password Reset OTP - Tdk Lab
  
 Hello ${userName}!
  
-We received a request to reset your password for your Flexitech account.
+We received a request to reset your password for your Tdk Lab account.
  
 Your OTP Code: ${otp}
  
@@ -247,7 +247,7 @@ Security Notice:
 - This code expires in 10 minutes
 - If you didn't request this reset, please ignore this email
  
-© ${new Date().getFullYear()} Dalil Arehan. All rights reserved.
+© ${new Date().getFullYear()} Tdk Lab. All rights reserved.
       `,
     };
 
@@ -269,7 +269,7 @@ Security Notice:
         process.env.OTP_EMAIL ||
         process.env.EMAIL_USER,
       to: email,
-      subject: "Password Reset Successful - Dalil Arehan",
+      subject: "Password Reset Successful - Tdk Lab",
       html: `
         <!DOCTYPE html>
         <html>
