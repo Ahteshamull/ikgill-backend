@@ -3,11 +3,9 @@ import userModel from "../../models/auth/userModal.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import SendOtp from "../../helper/sendOtp.js";
-import otp from "otp-generator-simple";
-import otpGenerator from "otp-generator-simple";
 import PasswordReset from "../../models/auth/passwordResetModal/passwordResetModal.js";
 import otpService from "../../helper/otpService.js";
-import userModal from "../../models/auth/userModal.js";
+
 
 export const signup = async (req, res) => {
   let { name, email, password, role } = req.body;

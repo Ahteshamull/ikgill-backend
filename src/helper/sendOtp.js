@@ -26,17 +26,17 @@ class SendOtp {
     ).replace(/\s+/g, "");
     const emailUser = process.env.OTP_EMAIL || process.env.EMAIL_USER;
 
-    // // Debug logging
-    // console.log("📧 Email Configuration Debug:");
-    // console.log("- Service:", service);
-    // console.log(
-    //   "- Email User:",
-    //   emailUser ? `${emailUser.substring(0, 3)}***` : "NOT SET"
-    // );
-    // console.log(
-    //   "- Email Password:",
-    //   emailPassword ? `${emailPassword.substring(0, 4)}***` : "NOT SET"
-    // );
+    // Debug logging
+    console.log("📧 Email Configuration Debug:");
+    console.log("- Service:", service);
+    console.log(
+      "- Email User:",
+      emailUser ? `${emailUser.substring(0, 3)}***` : "NOT SET"
+    );
+    console.log(
+      "- Email Password:",
+      emailPassword ? `${emailPassword.substring(0, 4)}***` : "NOT SET"
+    );
 
     if (!emailUser || !emailPassword) {
       console.error("❌ ERROR: Email credentials are missing!");
@@ -82,26 +82,36 @@ class SendOtp {
   // Send test email
   async sendTestEmail(toEmail) {
     try {
-      const transporter = this.getTransporter();
-      const resend = new Resend(process.env.RESEND_API_KEY);
-      const result = await transporter.resend.emails.send({
-        from:
-          process.env.EMAIL_FROM ||
-          process.env.OTP_EMAIL ||
-          process.env.EMAIL_USER,
-        to: toEmail,
-        subject: "Test Email - Tdk Lab",
-        html: `
+      const from =
+        process.env.EMAIL_FROM ||
+        process.env.OTP_EMAIL ||
+        process.env.EMAIL_USER;
+
+      const html = `
           <h2>🎉 Email Configuration Test</h2>
-          <p>If you receive this email, your Nodemailer configuration is working correctly!</p>
+          <p>If you receive this email, your email configuration is working correctly!</p>
           <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
           <hr>
           <p><small>This is a test email from Tdk Lab backend service.</small></p>
-        `,
-      });
+        `;
 
-      console.log("✅ Test email sent successfully:", result.messageId);
-      return { success: true, messageId: result.messageId };
+      if (process.env.RESEND_API_KEY) {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        const result = await resend.emails.send({
+          from,
+          to: toEmail,
+          subject: "Test Email - Tdk Lab",
+          html,
+        });
+        const messageId = result?.messageId || result?.id || "";
+        console.log("✅ Test email sent successfully:", messageId);
+        return { success: true, messageId };
+      } else {
+        const transporter = this.getTransporter();
+        const info = await transporter.sendMail({ from, to: toEmail, subject: "Test Email - Tdk Lab", html });
+        console.log("✅ Test email sent successfully:", info.messageId);
+        return { success: true, messageId: info.messageId };
+      }
     } catch (error) {
       console.error("❌ Failed to send test email:", error);
       return { success: false, error: error.message };
@@ -255,10 +265,24 @@ Security Notice:
     };
 
     try {
-      const transporter = this.getTransporter();
-      const info = await transporter.resend.emails.send(mailOptions);
-      console.log("OTP email sent successfully:", info.messageId);
-      return { success: true, messageId: info.messageId };
+      if (process.env.RESEND_API_KEY) {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        const info = await resend.emails.send({
+          from: mailOptions.from,
+          to: mailOptions.to,
+          subject: mailOptions.subject,
+          html: mailOptions.html,
+          text: mailOptions.text,
+        });
+        const messageId = info?.messageId || info?.id || "";
+        console.log("OTP email sent successfully:", messageId);
+        return { success: true, messageId };
+      } else {
+        const transporter = this.getTransporter();
+        const info = await transporter.sendMail(mailOptions);
+        console.log("OTP email sent successfully:", info.messageId);
+        return { success: true, messageId: info.messageId };
+      }
     } catch (error) {
       console.error("Failed to send OTP email:", error);
       throw new Error("Failed to send OTP email");
@@ -381,13 +405,24 @@ For your security, we recommend:
     };
 
     try {
-      const transporter = this.getTransporter();
-      const info = await transporter.sendMail(mailOptions);
-      console.log(
-        "Password reset confirmation email sent successfully:",
-        info.messageId
-      );
-      return { success: true, messageId: info.messageId };
+      if (process.env.RESEND_API_KEY) {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        const info = await resend.emails.send({
+          from: mailOptions.from,
+          to: mailOptions.to,
+          subject: mailOptions.subject,
+          html: mailOptions.html,
+          text: mailOptions.text,
+        });
+        const messageId = info?.messageId || info?.id || "";
+        console.log("Password reset confirmation email sent successfully:", messageId);
+        return { success: true, messageId };
+      } else {
+        const transporter = this.getTransporter();
+        const info = await transporter.sendMail(mailOptions);
+        console.log("Password reset confirmation email sent successfully:", info.messageId);
+        return { success: true, messageId: info.messageId };
+      }
     } catch (error) {
       console.error("Failed to send confirmation email:", error);
       throw new Error("Failed to send confirmation email");

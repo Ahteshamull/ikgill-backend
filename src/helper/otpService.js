@@ -1,5 +1,4 @@
 import bcrypt from "bcrypt";
-import crypto from "crypto";
 
 const otpService = {
   generateOTPData: (email) => {
