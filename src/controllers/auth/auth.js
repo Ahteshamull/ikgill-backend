@@ -175,9 +175,7 @@ export const forgotPassword = async (req, res) => {
   } catch (err) {
     await PasswordReset.deleteMany({ email });
     console.error("OTP send failed:", err);
-    return res
-      .status(500)
-      .json({ error: true,  error: err });
+    return res.status(500).json({ error: true, error: err });
   }
 };
 
@@ -469,12 +467,10 @@ export const refreshAccessToken = async (req, res) => {
         data: { accessToken, refreshToken: newRefreshToken },
       });
   } catch (error) {
-    return res
-      .status(401)
-      .json({
-        error: true,
-        message: error?.message || "Invalid refresh token",
-      });
+    return res.status(401).json({
+      error: true,
+      message: error?.message || "Invalid refresh token",
+    });
   }
 };
 
