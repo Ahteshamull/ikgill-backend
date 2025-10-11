@@ -67,10 +67,7 @@ export const login = async (req, res) => {
     });
   }
 
-  const isPasswordValid = await bcrypt.compare(
-    password,
-    existingUser.password
-  );
+  const isPasswordValid = await bcrypt.compare(password, existingUser.password);
 
   if (!isPasswordValid) {
     return res
@@ -102,7 +99,9 @@ export const login = async (req, res) => {
     .cookie("refreshToken", refreshToken, cookieOptions)
     .json({
       success: true,
-      message: `${existingUser.role === "admin" ? "Admin" : "User"} login successfully`,
+      message: `${
+        existingUser.role === "admin" ? "Admin" : "User"
+      } login successfully`,
       data: loginUserInfo,
       accessToken,
       refreshToken,
@@ -176,7 +175,9 @@ export const forgotPassword = async (req, res) => {
   } catch (err) {
     await PasswordReset.deleteMany({ email });
     console.error("OTP send failed:", err);
-    return res.status(500).json({ error: true, message: "Failed to send OTP" });
+    return res
+      .status(500)
+      .json({ error: true, message: "Failed to send OTP", error: err });
   }
 };
 
@@ -470,10 +471,12 @@ export const refreshAccessToken = async (req, res) => {
   } catch (error) {
     return res
       .status(401)
-      .json({ error: true, message: error?.message || "Invalid refresh token" });
+      .json({
+        error: true,
+        message: error?.message || "Invalid refresh token",
+      });
   }
 };
- 
 
 export const testEmailConfig = async (req, res) => {
   try {
