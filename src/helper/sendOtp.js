@@ -108,7 +108,12 @@ class SendOtp {
         return { success: true, messageId };
       } else {
         const transporter = this.getTransporter();
-        const info = await transporter.sendMail({ from, to: toEmail, subject: "Test Email - Tdk Lab", html });
+        const info = await transporter.sendMail({
+          from,
+          to: toEmail,
+          subject: "Test Email - Tdk Lab",
+          html,
+        });
         console.log("✅ Test email sent successfully:", info.messageId);
         return { success: true, messageId: info.messageId };
       }
@@ -119,7 +124,6 @@ class SendOtp {
   }
 
   async sendOTPEmail(email, otp, userName = "User") {
-    
     const mailOptions = {
       from:
         process.env.EMAIL_FROM ||
@@ -415,12 +419,18 @@ For your security, we recommend:
           text: mailOptions.text,
         });
         const messageId = info?.messageId || info?.id || "";
-        console.log("Password reset confirmation email sent successfully:", messageId);
+        console.log(
+          "Password reset confirmation email sent successfully:",
+          messageId
+        );
         return { success: true, messageId };
       } else {
         const transporter = this.getTransporter();
         const info = await transporter.sendMail(mailOptions);
-        console.log("Password reset confirmation email sent successfully:", info.messageId);
+        console.log(
+          "Password reset confirmation email sent successfully:",
+          info.messageId
+        );
         return { success: true, messageId: info.messageId };
       }
     } catch (error) {

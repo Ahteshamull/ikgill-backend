@@ -6,7 +6,6 @@ import SendOtp from "../../helper/sendOtp.js";
 import PasswordReset from "../../models/auth/passwordResetModal/passwordResetModal.js";
 import otpService from "../../helper/otpService.js";
 
-
 export const signup = async (req, res) => {
   let { name, email, password, role } = req.body;
 
@@ -173,7 +172,11 @@ export const forgotPassword = async (req, res) => {
   } catch (err) {
     await PasswordReset.deleteMany({ email });
     console.error("OTP send failed:", err);
-    return res.status(500).json({ error: true, error: err });
+    return res.status(500).json({
+      error: true,
+      message: "Failed to send OTP",
+      details: err.message,
+    });
   }
 };
 
