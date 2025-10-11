@@ -88,13 +88,13 @@ class SendOtp {
           process.env.OTP_EMAIL ||
           process.env.EMAIL_USER,
         to: toEmail,
-        subject: "Test Email - Dalil Arehan",
+        subject: "Test Email - Tdk Lab",
         html: `
           <h2>🎉 Email Configuration Test</h2>
           <p>If you receive this email, your Nodemailer configuration is working correctly!</p>
           <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
           <hr>
-          <p><small>This is a test email from Dalil Arehan backend service.</small></p>
+          <p><small>This is a test email from Tdk Lab backend service.</small></p>
         `,
       });
 
@@ -113,7 +113,7 @@ class SendOtp {
         process.env.OTP_EMAIL ||
         process.env.EMAIL_USER,
       to: email,
-      subject: "Password Reset OTP - Flexitech",
+      subject: "Password Reset OTP - Tdk Lab",
       html: `
         <!DOCTYPE html>
         <html>
