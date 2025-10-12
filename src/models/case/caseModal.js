@@ -12,7 +12,17 @@ const CaseSchema = new mongoose.Schema(
     // Basic Information
     // ======================
     caseType: {
+      type: String,
       enum: ["New", "Continuation", "Remake"],
+    },
+    gender: {
+      type: String,
+      enum: ["Male", "Female"],
+      required: true,
+    },
+    age: {
+      type: Number,
+      required: true,
     },
     caseNumber: {
       type: String,
