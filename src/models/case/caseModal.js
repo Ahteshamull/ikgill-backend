@@ -30,7 +30,7 @@ const CaseSchema = new mongoose.Schema(
     patientID: { type: String, trim: true, unique: true },
 
     // Tier Selection
-    // ======================
+    // ====================== 
     selectedTier: {
       type: String,
       enum: ["Standard", "Premium"],
@@ -89,25 +89,25 @@ const CaseSchema = new mongoose.Schema(
         fullCast: {
           materialType: { type: String, enum: ["NP (silver coloured)"] },
           singleUnitCrown: {
-            enabled: Boolean,
+            enabled: { type: Boolean, default: false },
             teeth: [String],
             specialInstructions: String,
             attachments: [AttachmentSchema],
           },
           bridge: {
-            enabled: Boolean,
+            enabled: { type: Boolean, default: false },
             teeth: [String],
             specialInstructions: String,
             attachments: [AttachmentSchema],
           },
           postAndCore: {
-            enabled: Boolean,
+            enabled: { type: Boolean, default: false },
             teeth: [String],
             specialInstructions: String,
             attachments: [AttachmentSchema],
           },
           conventionalBridge: {
-            enabled: Boolean,
+            enabled: { type: Boolean, default: false },
             ponticDesign: {
               type: String,
               enum: [
@@ -124,7 +124,7 @@ const CaseSchema = new mongoose.Schema(
           },
         },
         metalFree: {
-          enabled: Boolean,
+          enabled: { type: Boolean, default: false },
           type: { type: String, enum: ["Composite Inlay/Onlay"] },
           teeth: [String],
           specialInstructions: String,
@@ -136,7 +136,7 @@ const CaseSchema = new mongoose.Schema(
             enum: ["Denture Construction", "Denture Other"],
           },
           construction: {
-            enabled: Boolean,
+            enabled: { type: Boolean, default: false },
             selectedOptions: [
               {
                 type: String,
@@ -165,7 +165,7 @@ const CaseSchema = new mongoose.Schema(
             attachments: [AttachmentSchema],
           },
           other: {
-            enabled: Boolean,
+            enabled: { type: Boolean, default: false },
             selectedOptions: [
               { type: String, enum: ["Reline", "Repair", "Addition"] },
             ],
@@ -178,7 +178,7 @@ const CaseSchema = new mongoose.Schema(
       },
       Dentures: {
         construction: {
-          enabled: { type: Boolean, default: false },
+          enabled:  { type: Boolean, default: false },
 
           selectedOptions: [
             {

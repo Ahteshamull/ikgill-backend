@@ -49,10 +49,10 @@ export const createCase = async (req, res) => {
 
     // Parse JSON string fields back to objects
     const parsedBody = { ...req.body };
-    const fieldsToParseIfString = ['standard', 'premium'];
-    
-    fieldsToParseIfString.forEach(field => {
-      if (parsedBody[field] && typeof parsedBody[field] === 'string') {
+    const fieldsToParseIfString = ["standard", "premium"];
+
+    fieldsToParseIfString.forEach((field) => {
+      if (parsedBody[field] && typeof parsedBody[field] === "string") {
         try {
           parsedBody[field] = JSON.parse(parsedBody[field]);
         } catch (parseError) {
@@ -70,7 +70,9 @@ export const createCase = async (req, res) => {
 
     // Enforce unique patientID at create-time
     if (caseDataToCreate.patientID) {
-      const exists = await Case.exists({ patientID: caseDataToCreate.patientID });
+      const exists = await Case.exists({
+        patientID: caseDataToCreate.patientID,
+      });
       if (exists) {
         return res.status(400).json({
           success: false,
@@ -82,7 +84,8 @@ export const createCase = async (req, res) => {
 
     // Track which UserRole (e.g., dentist) created the case
     if (!caseDataToCreate.createdByUserRole) {
-      caseDataToCreate.createdByUserRole = req.user?._id || parsedBody.createdByUserRole;
+      caseDataToCreate.createdByUserRole =
+        req.user?._id || parsedBody.createdByUserRole;
     }
 
     // Check if scanNumber is provided
@@ -213,9 +216,9 @@ export const getAllCases = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching cases:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -230,21 +233,21 @@ export const getCaseById = async (req, res) => {
       .populate("assignedTo", "name email role");
 
     if (!caseData) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: "Case not found" 
+        error: "Case not found",
       });
     }
 
-    res.status(200).json({ 
+    res.status(200).json({
       success: true,
-      data: caseData 
+      data: caseData,
     });
   } catch (error) {
     console.error("Error fetching case:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -256,10 +259,10 @@ export const updateCase = async (req, res) => {
 
     // Parse JSON string fields back to objects
     const updateData = { ...req.body };
-    const fieldsToParseIfString = ['standard', 'premium'];
-    
-    fieldsToParseIfString.forEach(field => {
-      if (updateData[field] && typeof updateData[field] === 'string') {
+    const fieldsToParseIfString = ["standard", "premium"];
+
+    fieldsToParseIfString.forEach((field) => {
+      if (updateData[field] && typeof updateData[field] === "string") {
         try {
           updateData[field] = JSON.parse(updateData[field]);
         } catch (parseError) {
@@ -277,9 +280,9 @@ export const updateCase = async (req, res) => {
       .populate("assignedTo", "name email");
 
     if (!updatedCase) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: "Case not found" 
+        error: "Case not found",
       });
     }
 
@@ -290,10 +293,10 @@ export const updateCase = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating case:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: error.message, 
-      details: error.errors 
+      error: error.message,
+      details: error.errors,
     });
   }
 };
@@ -306,9 +309,9 @@ export const deleteCase = async (req, res) => {
     const deletedCase = await Case.findByIdAndDelete(id);
 
     if (!deletedCase) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: "Case not found" 
+        error: "Case not found",
       });
     }
 
@@ -319,9 +322,9 @@ export const deleteCase = async (req, res) => {
     });
   } catch (error) {
     console.error("Error deleting case:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -332,7 +335,13 @@ export const updateCaseStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    const validStatuses = ["Pending", "In Progress", "Completed", "Cancelled", "On Hold"];
+    const validStatuses = [
+      "Pending",
+      "In Progress",
+      "Completed",
+      "Cancelled",
+      "On Hold",
+    ];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
@@ -347,9 +356,9 @@ export const updateCaseStatus = async (req, res) => {
     );
 
     if (!updatedCase) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: "Case not found" 
+        error: "Case not found",
       });
     }
 
@@ -360,13 +369,12 @@ export const updateCaseStatus = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating case status:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: error.message 
+      error: error.message,
     });
   }
 };
-
 
 // Get cases by patient ID
 export const getCasesByPatient = async (req, res) => {
@@ -402,9 +410,9 @@ export const getCasesByPatient = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching patient cases:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -425,9 +433,9 @@ export const getCasesByClinic = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching clinic cases:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -470,9 +478,9 @@ export const getCaseStats = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching case stats:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -501,10 +509,10 @@ export const remakeCase = async (req, res) => {
 
     // Parse JSON string fields back to objects
     const parsedBody = { ...req.body };
-    const fieldsToParseIfString = ['standard', 'premium'];
-    
-    fieldsToParseIfString.forEach(field => {
-      if (parsedBody[field] && typeof parsedBody[field] === 'string') {
+    const fieldsToParseIfString = ["standard", "premium"];
+
+    fieldsToParseIfString.forEach((field) => {
+      if (parsedBody[field] && typeof parsedBody[field] === "string") {
         try {
           parsedBody[field] = JSON.parse(parsedBody[field]);
         } catch (parseError) {
@@ -870,10 +878,28 @@ export const caseDownload = async (req, res) => {
   try {
     const caseData = await Case.findById(req.params.id).lean();
     if (!caseData) {
-      return res.status(404).json({ success: false,message: "Case not found", error: "Case not found" });
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: "Case not found",
+          error: "Case not found",
+        });
     }
-    return res.status(200).json({ success: true,message: "Case downloaded successfully", data: caseData });
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "Case downloaded successfully",
+        data: caseData,
+      });
   } catch (error) {
-    return res.status(500).json({ success: false,message: "Case downloading failed", error: error.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Case downloading failed",
+        error: error.message,
+      });
   }
 };
