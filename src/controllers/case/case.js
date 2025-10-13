@@ -2,6 +2,9 @@ import Case from "../../models/case/caseModal.js";
 import mongoose from "mongoose";
 import Notification from "../../models/notification/notification.js";
 import { io } from "../../utils/socket.js";
+import { jsPDF } from "jspdf"; // optional if you want jsPDF
+import PDFDocument from "pdfkit"; // recommended
+import { Readable } from "stream";
 // Note: Frontend will handle formatting/export (no server-side PDF)
 
 // Create a new case
@@ -903,3 +906,88 @@ export const caseDownload = async (req, res) => {
       });
   }
 };
+// export const caseDownload = async (req, res) => {
+//   try {
+//     const caseData = await Case.findById(req.params.id).lean();
+//     if (!caseData) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Case not found",
+//       });
+//     }
+
+//     // PDF Setup
+//     const doc = new PDFDocument({ margin: 40 });
+//     res.setHeader("Content-Type", "application/pdf");
+//     res.setHeader(
+//       "Content-Disposition",
+//       `attachment; filename=case_${caseData._id}.pdf`
+//     );
+//     doc.pipe(res);
+
+//     // Title
+//     doc.fontSize(18).text("CASE DETAILS", { align: "center", underline: true });
+//     doc.moveDown(1.5);
+
+//     // Helper function to draw one row
+//     const drawRow = (label, value) => {
+//       doc
+//         .fontSize(11)
+//         .text(label, { continued: true, width: 200 })
+//         .text(value || "-", { align: "right" });
+//       doc.moveDown(0.3);
+//       doc
+//         .moveTo(40, doc.y)
+//         .lineTo(560, doc.y)
+//         .strokeColor("#000")
+//         .lineWidth(0.5)
+//         .stroke();
+//       doc.moveDown(0.3);
+//     };
+
+//     // Each field (You can modify according to your Case Schema)
+//     drawRow("NEW CASE/CONTINUATION/REMARK", caseData.caseType);
+//     drawRow("PATIENT ID", caseData.patientID);
+//     drawRow("GENDER", caseData.gender);
+//     drawRow("AGE", caseData.age);
+//     drawRow("SCAN NUMBER", caseData.scanNumber);
+//     drawRow("STANDARD/PREMIUM", caseData.selectedTier);
+//     drawRow("CROWN+BRIDGE/DENTURE/MISE", caseData.workCategory);
+//     drawRow("PFM/FULL CAST/METAL FREE", caseData.standard_pfm?.materialType);
+//     drawRow(
+//       "SINGLE UNIT CROWN/MARYLAND/CONV BRIDGE",
+//       caseData.standard_pfm?.unitType
+//     );
+//     drawRow("PORCELAIN BUTT MARGIN 360/BUCCAL ONLY", caseData.porcelainMargin);
+//     drawRow("TOOTH NUMBER", caseData.toothNumber);
+//     drawRow("SHADE", caseData.shade);
+//     drawRow("SPECIAL INSTRUCTION", caseData.specialInstruction || "-");
+
+//     // Attachments section (if image exists)
+//     if (caseData.attachment && caseData.attachment !== "") {
+//       doc.moveDown(1);
+//       doc.fontSize(12).text("ATTACHMENTS:", { underline: true });
+//       try {
+//         doc.image(caseData.attachment, {
+//           fit: [200, 200],
+//           align: "center",
+//           valign: "center",
+//         });
+//       } catch {
+//         doc.text("(Attachment could not be loaded)");
+//       }
+//     }
+
+//     // Footer
+//     doc.moveDown(2);
+//     doc.fontSize(10).fillColor("gray").text("LAB SECTION", { align: "left" });
+
+//     doc.end();
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Case downloading failed",
+//       error: error.message,
+//     });
+//   }
+// };
