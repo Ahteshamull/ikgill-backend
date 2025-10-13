@@ -7,7 +7,34 @@ import PDFDocument from "pdfkit"; // recommended
 import { Readable } from "stream";
 // Note: Frontend will handle formatting/export (no server-side PDF)
 
-// Create a new case
+// Utility to prune empty or disabled fields
+const pruneFields = (obj) => {
+  if (!obj) return null;
+
+  if (Array.isArray(obj)) {
+    const filtered = obj
+      .map(pruneFields)
+      .filter((v) => v !== null && v !== undefined);
+    return filtered.length > 0 ? filtered : null;
+  }
+
+  if (typeof obj === "object") {
+    if (obj.hasOwnProperty("enabled") && obj.enabled === false) return null;
+
+    const prunedObj = {};
+    for (const key in obj) {
+      const val = pruneFields(obj[key]);
+      if (val !== null && val !== undefined) prunedObj[key] = val;
+    }
+    return Object.keys(prunedObj).length > 0 ? prunedObj : null;
+  }
+
+  if (obj === "" || obj === false || obj === null) return null;
+  return obj;
+};
+
+
+
 export const createCase = async (req, res) => {
   try {
     // Handle optional image uploads
@@ -18,43 +45,38 @@ export const createCase = async (req, res) => {
     }));
 
     // Validate ObjectId fields if provided
-    if (req.body.clinicId) {
-      if (!mongoose.Types.ObjectId.isValid(req.body.clinicId)) {
-        return res.status(400).json({
-          success: false,
-          error: "Invalid clinicId format",
-          message: "clinicId must be a valid 24-character MongoDB ObjectId",
-          received: req.body.clinicId,
-          length: req.body.clinicId.length,
-        });
-      }
+    if (
+      req.body.clinicId &&
+      !mongoose.Types.ObjectId.isValid(req.body.clinicId)
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid clinicId format",
+        message: "clinicId must be a valid 24-character MongoDB ObjectId",
+        received: req.body.clinicId,
+        length: req.body.clinicId.length,
+      });
     }
-
-    if (req.body.assignedTo) {
-      if (!mongoose.Types.ObjectId.isValid(req.body.assignedTo)) {
-        return res.status(400).json({
-          success: false,
-          error: "Invalid assignedTo format",
-          message: "assignedTo must be a valid 24-character MongoDB ObjectId",
-          received: req.body.assignedTo,
-          length: req.body.assignedTo.length,
-        });
-      }
+    if (
+      req.body.assignedTo &&
+      !mongoose.Types.ObjectId.isValid(req.body.assignedTo)
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid assignedTo format",
+        message: "assignedTo must be a valid 24-character MongoDB ObjectId",
+        received: req.body.assignedTo,
+        length: req.body.assignedTo.length,
+      });
     }
 
     // Remove empty ObjectId fields
-    if (req.body.clinicId === "" || req.body.clinicId === null) {
-      delete req.body.clinicId;
-    }
-    if (req.body.assignedTo === "" || req.body.assignedTo === null) {
-      delete req.body.assignedTo;
-    }
+    if (!req.body.clinicId) delete req.body.clinicId;
+    if (!req.body.assignedTo) delete req.body.assignedTo;
 
     // Parse JSON string fields back to objects
     const parsedBody = { ...req.body };
-    const fieldsToParseIfString = ["standard", "premium"];
-
-    fieldsToParseIfString.forEach((field) => {
+    ["standard", "premium"].forEach((field) => {
       if (parsedBody[field] && typeof parsedBody[field] === "string") {
         try {
           parsedBody[field] = JSON.parse(parsedBody[field]);
@@ -64,10 +86,24 @@ export const createCase = async (req, res) => {
       }
     });
 
-    // Prepare case data
+    // ---------------------------
+    // Prune Standard / Premium
+    // ---------------------------
+    let { standard, premium, selectedTier, ...rest } = parsedBody;
+
+    if (selectedTier === "Standard") {
+      premium = undefined;
+      premium = pruneFields(premium);
+    } else if (selectedTier === "Premium") {
+      standard = undefined;
+      standard = pruneFields(standard);
+    }
+
     const caseDataToCreate = {
-      ...parsedBody,
-      // Add images to globalAttachments if files were uploaded
+      selectedTier,
+      standard,
+      premium,
+      ...rest,
       ...(images && images.length > 0 && { globalAttachments: images }),
     };
 
@@ -91,15 +127,11 @@ export const createCase = async (req, res) => {
         req.user?._id || parsedBody.createdByUserRole;
     }
 
-    // Check if scanNumber is provided
+    // ScanNumber logic
     if (parsedBody.scanNumber && parsedBody.scanNumber.trim() !== "") {
-      // If scanNumber exists, case goes to Admin (Pending)
       caseDataToCreate.status = "Pending";
-      caseDataToCreate.adminApproval = {
-        status: "Pending",
-      };
+      caseDataToCreate.adminApproval = { status: "Pending" };
     } else {
-      // If no scanNumber, case goes directly to Lab Manager (Accepted)
       caseDataToCreate.status = "Accepted";
       caseDataToCreate.adminApproval = {
         status: "Accepted",
@@ -109,7 +141,7 @@ export const createCase = async (req, res) => {
 
     const caseData = await Case.create(caseDataToCreate);
 
-    // Create a notification for admins when a case is created
+    // Notification
     try {
       const notif = await Notification.create({
         type: "case_created",
@@ -119,7 +151,6 @@ export const createCase = async (req, res) => {
         createdBy: caseData.createdBy || req.user?._id,
         receiverRole: "admin",
       });
-      // Emit realtime notification (broadcast). Adjust targeting if you track admin socket IDs.
       io.emit("notification", {
         _id: notif._id,
         type: notif.type,
@@ -140,8 +171,6 @@ export const createCase = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating case:", error);
-
-    // Handle validation errors
     if (error.name === "ValidationError") {
       return res.status(400).json({
         success: false,
@@ -149,8 +178,6 @@ export const createCase = async (req, res) => {
         details: error.errors,
       });
     }
-
-    // Handle cast errors
     if (error.name === "CastError") {
       return res.status(400).json({
         success: false,
@@ -158,7 +185,6 @@ export const createCase = async (req, res) => {
         message: error.message,
       });
     }
-
     res.status(500).json({
       success: false,
       error: error.message,
@@ -881,29 +907,23 @@ export const caseDownload = async (req, res) => {
   try {
     const caseData = await Case.findById(req.params.id).lean();
     if (!caseData) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "Case not found",
-          error: "Case not found",
-        });
-    }
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Case downloaded successfully",
-        data: caseData,
-      });
-  } catch (error) {
-    return res
-      .status(500)
-      .json({
+      return res.status(404).json({
         success: false,
-        message: "Case downloading failed",
-        error: error.message,
+        message: "Case not found",
+        error: "Case not found",
       });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Case downloaded successfully",
+      data: caseData,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Case downloading failed",
+      error: error.message,
+    });
   }
 };
 // export const caseDownload = async (req, res) => {
