@@ -30,7 +30,7 @@ const CaseSchema = new mongoose.Schema(
     patientID: { type: String, trim: true, unique: true },
 
     // Tier Selection
-    // ====================== 
+    // ======================
     selectedTier: {
       type: String,
       enum: ["Standard", "Premium"],
@@ -178,7 +178,7 @@ const CaseSchema = new mongoose.Schema(
       },
       Dentures: {
         construction: {
-          enabled:  { type: Boolean, default: false },
+          enabled: { type: Boolean, default: false },
 
           selectedOptions: [
             {
@@ -377,6 +377,11 @@ const CaseSchema = new mongoose.Schema(
     // ======================
     // Common Fields
     // ======================
+    description: {
+      type: String,
+    },
+
+    globalAttachments: [AttachmentSchema],
 
     clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic" },
     status: {

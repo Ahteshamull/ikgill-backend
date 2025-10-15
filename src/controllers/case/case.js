@@ -34,6 +34,31 @@ const pruneFields = (obj) => {
 };
 
 
+// Utility to set a nested path (dot notation) to an array value, creating objects along the way
+const setDeep = (obj, path, items) => {
+  if (!obj || !path) return;
+  const parts = path.split(".");
+  let curr = obj;
+  for (let i = 0; i < parts.length; i++) {
+    const key = parts[i];
+    const isLast = i === parts.length - 1;
+    if (isLast) {
+      const existing = curr[key];
+      if (Array.isArray(existing)) {
+        curr[key] = [...existing, ...items];
+      } else if (existing == null) {
+        curr[key] = items;
+      } else {
+        curr[key] = items;
+      }
+    } else {
+      if (!curr[key] || typeof curr[key] !== "object") curr[key] = {};
+      curr = curr[key];
+    }
+  }
+};
+
+
 
 export const createCase = async (req, res) => {
   try {
@@ -104,8 +129,17 @@ export const createCase = async (req, res) => {
       standard,
       premium,
       ...rest,
-      ...(images && images.length > 0 && { globalAttachments: images }),
     };
+
+    // Apply uploaded images to a targeted nested attachments array, if provided
+    if (images && images.length > 0) {
+      const attachmentsPath = req.body.attachmentsPath; // e.g., "standard.CrownBridge.pfm.singleUnitCrown.attachments"
+      if (attachmentsPath) {
+        setDeep(caseDataToCreate, attachmentsPath, images);
+      } else {
+        caseDataToCreate.globalAttachments = images;
+      }
+    }
 
     // Enforce unique patientID at create-time
     if (caseDataToCreate.patientID) {
@@ -581,9 +615,17 @@ export const remakeCase = async (req, res) => {
     const remakeData = {
       ...parsedBody,
       caseType: "Remake", // Set case type as Remake
-      // Add images to globalAttachments if files were uploaded
-      ...(images && images.length > 0 && { globalAttachments: images }),
     };
+
+    // Apply uploaded images to a targeted nested attachments array, if provided
+    if (images && images.length > 0) {
+      const attachmentsPath = req.body.attachmentsPath; // e.g., "standard.CrownBridge.pfm.singleUnitCrown.attachments"
+      if (attachmentsPath) {
+        setDeep(remakeData, attachmentsPath, images);
+      } else {
+        remakeData.globalAttachments = images;
+      }
+    }
 
     // Update the case with new data (replacing all fields)
     const remadeCase = await Case.findByIdAndUpdate(
