@@ -10,6 +10,7 @@ import {
   getUserCountByRole,
   getUserRatioByMonth,
   updateUser,
+  userUpdatePersonalInfo,
 } from "../../controllers/user/user.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
 
@@ -34,6 +35,8 @@ router.get("/all-block-user-list", allBlockUserList);
 router.get("/user-count-by-role", getUserCountByRole);
 
 router.get("/user-ratio-by-month", getUserRatioByMonth);
+
+router.put("/user-update-personal-info/:id", userUpdatePersonalInfo);
 
 
 export default router;
