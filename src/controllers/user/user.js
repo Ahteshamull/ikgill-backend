@@ -1,12 +1,15 @@
 import fs from "fs";
 import path from "path";
 import userRoleModel from "../../models/users/userRoleModal.js";
+import bcrypt from "bcrypt";
+import { generateAccessAndRefreshToken } from "../auth/auth.js";
 
 export const createUser = async (req, res) => {
   try {
     const {
       name,
       email,
+      password,
       phone,
       role,
       clinic,
@@ -16,13 +19,15 @@ export const createUser = async (req, res) => {
       sendMessagesToDoctors,
       qualityCheckPermission,
       createdBy,
-    } = req.body;
+    } = req.body || {};
     const images = req.files.map(
       (item) => `${process.env.IMAGE_URL}${item.filename}`
     );
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await userRoleModel.create({
       name,
       email,
+      password: hashedPassword,
       phone,
       role,
       clinic,
@@ -338,29 +343,93 @@ export const getUserRatioByMonth = async (req, res) => {
     });
   }
 };
+
 export const userUpdatePersonalInfo = async (req, res) => {
   try {
-    const { name, email, phone, country, dateOfBirth } = req.body;
-    const user = await userRoleModel.findByIdAndUpdate(
-      req.params.id,
-      {
-        name,
-        email,
-        phone,
-        country,
-        dateOfBirth,
-      },
-      { new: true }
+    // Authentication check
+    if (!req.user?._id) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized access",
+      });
+    }
+
+    // Extract fields from request body
+    const { name, email, phone, country, dateOfBirth } = req.body || {};
+    const updates = {};
+
+    if (name !== undefined) updates.name = name;
+    if (email !== undefined) updates.email = email;
+    if (phone !== undefined) updates.phone = phone;
+    if (country !== undefined) updates.country = country;
+    if (dateOfBirth !== undefined) updates.dateOfBirth = dateOfBirth;
+
+    // Update user info
+    const userUpdate = await userRoleModel.findByIdAndUpdate(
+      req.user._id,
+      updates,
+      { new: true, runValidators: true }
     );
+
     return res.status(200).json({
       success: true,
-      message: "Update your Info Successfully",
-      data: user,
+      message: "Your information updated successfully",
+      data: userUpdate,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Update your Info Failed",
+      message: "Failed to update your information",
+      error: error.message,
+    });
+  }
+};
+export const userLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await userRoleModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+      user
+    );
+    const loginUserInfo = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    };
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    };
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, cookieOptions)
+      .cookie("refreshToken", refreshToken, cookieOptions)
+      .json({
+        success: true,
+        message: "User login successfully",
+        data: loginUserInfo,
+        accessToken,
+        refreshToken,
+      });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "User login failed",
       error: error.message,
     });
   }

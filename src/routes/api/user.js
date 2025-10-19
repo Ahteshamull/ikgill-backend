@@ -11,8 +11,10 @@ import {
   getUserRatioByMonth,
   updateUser,
   userUpdatePersonalInfo,
+  userLogin,
 } from "../../controllers/user/user.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
+import userAuthMiddleware from "../../middlewares/userAuthMiddleware.js";
 
 const router = express.Router();
 //localhost:3000/api/v1/user/create-user
@@ -36,7 +38,8 @@ router.get("/user-count-by-role", getUserCountByRole);
 
 router.get("/user-ratio-by-month", getUserRatioByMonth);
 
-router.put("/user-update-personal-info/:id", userUpdatePersonalInfo);
+router.patch("/user-update-personal-info", userAuthMiddleware, userUpdatePersonalInfo);
 
+router.post("/user-login", userLogin);
 
 export default router;

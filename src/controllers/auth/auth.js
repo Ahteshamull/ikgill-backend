@@ -392,7 +392,7 @@ export const ResendOtp = async (req, res) => {
 };
 
 // Helper function to generate tokens
-const generateAccessAndRefreshToken = async (user) => {
+export const generateAccessAndRefreshToken = async (user) => {
   const accessToken = jwt.sign(
     {
       _id: user._id,
