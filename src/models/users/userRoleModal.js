@@ -46,6 +46,13 @@ const userRoleSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Lab",
     },
+    country: {
+      type: String,
+      
+    },
+    dateOfBirth: {
+      type: Date,
+    },
     caseListAccess: {
       type:Boolean,
      default:false,

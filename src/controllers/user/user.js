@@ -101,7 +101,8 @@ export const getSingleUser = async (req, res) => {
 };
 export const updateUser = async (req, res) => {
   try {
-    const { name, email, phone, role, clinic, lab } = req.body;
+    const { name, email, phone, role, clinic, lab, country, dateOfBirth } =
+      req.body;
     const images = req.files.map(
       (item) => `${process.env.IMAGE_URL}${item.filename}`
     );
@@ -114,6 +115,8 @@ export const updateUser = async (req, res) => {
         role,
         clinic,
         lab,
+        country,
+        dateOfBirth,
         image: images,
       },
       { new: true }
