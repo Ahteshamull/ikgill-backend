@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import userRoleModel from "../../models/users/userRoleModal.js";
 import bcrypt from "bcrypt";
 import { generateAccessAndRefreshToken } from "../auth/auth.js";
@@ -430,6 +428,95 @@ export const userLogin = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "User login failed",
+      error: error.message,
+    });
+  }
+};
+
+
+export const userChangePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body || {};
+
+    // Ensure authenticated user
+    if (!req.user?._id) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized access.",
+      });
+    }
+
+    // Fetch user with password
+    const user = await userRoleModel
+      .findById(req.user._id)
+      .select("+password +refreshToken");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    // Validate required fields
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "All password fields are required.",
+      });
+    }
+
+    // Check current password
+    const isCurrentValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Current password is incorrect.",
+      });
+    }
+
+    // Validate new passwords
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "New password and confirmation do not match.",
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters long.",
+      });
+    }
+
+    // Prevent reusing old password
+    const isSameAsOld = await bcrypt.compare(newPassword, user.password);
+    if (isSameAsOld) {
+      return res.status(400).json({
+        success: false,
+        message: "New password cannot be the same as the old password.",
+      });
+    }
+
+    // Update password and clear refresh token
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.refreshToken = undefined;
+
+    await user.save({ validateBeforeSave: false });
+
+    // Clear cookies if used
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+    return res.status(200).json({
+      success: true,
+      message: "Password changed successfully. Please login again.",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Password change failed.",
       error: error.message,
     });
   }

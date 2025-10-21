@@ -3,10 +3,15 @@ import userModal from "../models/auth/userModal.js";
 import userRoleModel from "../models/users/userRoleModal.js";
 
 const userAuthMiddleware = async (req, res, next) => {
-  const token = req.cookies.accessToken || req.headers.authorization?.split(" ")[1];
+  // Prefer Authorization header, fallback to httpOnly cookie
+  const authHeader = req.headers.authorization || req.headers.Authorization;
+  const bearerToken = authHeader && authHeader.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
+    : null;
+  const token = bearerToken || req.cookies?.accessToken;
 
   if (!token) {
-    return res.status(401).send({ success: false, message: "Token Not Found" });
+    return res.status(401).send({ success: false, message: "Unauthorized: access token not provided" });
   }
 
   try {
@@ -24,16 +29,16 @@ const userAuthMiddleware = async (req, res, next) => {
     }
 
     if (!user) {
-      return res.status(401).send({ success: false, message: "User not found" });
+      return res.status(401).send({ success: false, message: "Unauthorized: user not found" });
     }
 
     req.user = user;
     next();
   } catch (err) {
-    return res.status(403).send({
-      success: false,
-      message: "Unauthorized, JWT token is wrong or expired",
-    });
+    if (err?.name === "TokenExpiredError") {
+      return res.status(401).send({ success: false, message: "Unauthorized: token expired" });
+    }
+    return res.status(401).send({ success: false, message: "Unauthorized: invalid token" });
   }
 };
 

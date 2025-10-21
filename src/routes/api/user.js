@@ -12,6 +12,7 @@ import {
   updateUser,
   userUpdatePersonalInfo,
   userLogin,
+  userChangePassword,
 } from "../../controllers/user/user.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
 import userAuthMiddleware from "../../middlewares/userAuthMiddleware.js";
@@ -38,8 +39,14 @@ router.get("/user-count-by-role", getUserCountByRole);
 
 router.get("/user-ratio-by-month", getUserRatioByMonth);
 
-router.patch("/user-update-personal-info", userAuthMiddleware, userUpdatePersonalInfo);
+router.patch(
+  "/user-update-personal-info",
+  userAuthMiddleware,
+  userUpdatePersonalInfo
+);
 
 router.post("/user-login", userLogin);
+
+router.patch("/user-change-password", userAuthMiddleware, userChangePassword);
 
 export default router;
