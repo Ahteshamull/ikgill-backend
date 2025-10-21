@@ -1,5 +1,6 @@
 import EmailValidateCheck from "../../helper/emailValidate.js";
 import userModel from "../../models/auth/userModal.js";
+import userRoleModel from "../../models/users/userRoleModal.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import SendOtp from "../../helper/sendOtp.js";
@@ -229,8 +230,11 @@ export const verifyResetOTP = async (req, res) => {
     return res.status(429).json({ error: true, message: rateLimit.message });
   }
 
-  // Find user
-  const user = await userModel.findOne({ email: validRecord.email });
+  // Find user (try admin/auth model first, then role-based users)
+  let user = await userModel.findOne({ email: validRecord.email });
+  if (!user) {
+    user = await userRoleModel.findOne({ email: validRecord.email });
+  }
   if (!user) {
     return res.status(404).json({ error: true, message: "User not found" });
   }
@@ -256,16 +260,22 @@ export const verifyResetOTP = async (req, res) => {
 
 // ----------------- Reset Password -----------------
 export const resetPassword = async (req, res) => {
-  const { newPassword, confirmPassword } = req.body;
-  const authHeader = req.headers.authorization;
+  const { newPassword, confirmPassword, resetToken: bodyToken } = req.body || {};
+  const authHeader = req.headers.authorization || req.headers.Authorization;
+  const headerToken = authHeader && authHeader.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
+    : null;
+  const queryToken = req.query?.token;
+  const resetToken = headerToken || bodyToken || queryToken;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (!resetToken) {
     return res
       .status(401)
-      .json({ error: true, message: "Reset token required" });
+      .json({ error: true, message: "Reset token is required" });
   }
-
-  const resetToken = authHeader.split(" ")[1];
+  if (!newPassword || !confirmPassword) {
+    return res.status(400).json({ error: true, message: "newPassword and confirmPassword are required" });
+  }
   if (newPassword !== confirmPassword) {
     return res
       .status(400)
@@ -285,9 +295,10 @@ export const resetPassword = async (req, res) => {
       process.env.RESET_TOKEN_SECRET || "secret123"
     );
   } catch (err) {
+    const msg = err?.name === "TokenExpiredError" ? "Reset token expired" : "Invalid reset token";
     return res
       .status(401)
-      .json({ error: true, message: "Invalid or expired token" });
+      .json({ error: true, message: msg });
   }
 
   if (decoded.purpose !== "password-reset") {
@@ -296,13 +307,23 @@ export const resetPassword = async (req, res) => {
       .json({ error: true, message: "Invalid token purpose" });
   }
 
-  const user = await userModel.findById(decoded.userId);
+  // Find user in either collection
+  let user = await userModel.findById(decoded.userId);
+  let isAuthUser = true;
+  if (!user) {
+    user = await userRoleModel.findById(decoded.userId);
+    isAuthUser = false;
+  }
   if (!user) {
     return res.status(404).json({ error: true, message: "User not found" });
   }
 
   user.password = await bcrypt.hash(newPassword, 10);
-  await user.save();
+  // Clear stored refresh token if present (only auth user model has it)
+  if (isAuthUser && user.refreshToken) {
+    user.refreshToken = undefined;
+  }
+  await user.save({ validateBeforeSave: false });
 
   // Send password reset confirmation email
   try {
@@ -505,6 +526,42 @@ export const testEmailConfig = async (req, res) => {
         OTP_EMAIL: process.env.OTP_EMAIL ? " Set" : " Not Set",
         OTP_PASSWORD: process.env.OTP_PASSWORD ? " Set" : " Not Set",
       },
+    });
+  }
+};
+
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body || {};
+    const user = await userModel.findById(req.user?._id);
+    if (!user) {
+      return res.status(404).json({ error: true, message: "User not found" });
+    }
+    // const isSameAsOld = await bcrypt.compare(currentPassword, user.password);
+    // if (isSameAsOld) {
+    //   return res.status(400).json({
+    //     error: true,
+    //     message: "New password cannot be the same as the old password.",
+    //   });
+    // }
+    // Validate new passwords
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "New password and confirmation do not match.",
+      });
+    }
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save({ validateBeforeSave: false });
+    return res.status(200).json({
+      success: true,
+      message: "Password changed successfully.",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      message: "Password change failed.",
+      error: error.message,
     });
   }
 };
