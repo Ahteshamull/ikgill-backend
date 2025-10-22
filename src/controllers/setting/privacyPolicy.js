@@ -18,9 +18,9 @@ export const createPrivacyPolicy = async (req, res) => {
   }
 };
 
-export const getSinglePrivacyPolicy = async (req, res) => {
+export const getPrivacyPolicy = async (req, res) => {
     try {
-    const privacyPolicy = await PrivacyPolicy.findById(req.params.id);
+    const privacyPolicy = await PrivacyPolicy.findOne();
     res.status(200).json(privacyPolicy);
   } catch (error) {
     res.status(500).json({ error: "Failed to get privacy policy" });

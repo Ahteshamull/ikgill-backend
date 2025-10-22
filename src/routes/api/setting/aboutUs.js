@@ -2,7 +2,7 @@ import express from "express";
 import {
   createAboutUs,
   updateAboutUs,
-  getSingleAboutUs,
+  getAboutUs,
 } from "../../../controllers/setting/aboutUs.js";
 import { upload } from "../../../middlewares/imageControlMiddleware.js";
 const router = express.Router();
@@ -11,7 +11,7 @@ const router = express.Router();
 router.post("/create-about-us", upload.any(), createAboutUs);
 
 ////localhost:3000/api/v1/setting/about-us/:id
-router.get("/about-us/:id", getSingleAboutUs);
+router.get("/about-us", getAboutUs);
 
 ////localhost:3000/api/v1/setting/update-about-us/:id
 router.put("/update-about-us/:id", upload.any(), updateAboutUs);

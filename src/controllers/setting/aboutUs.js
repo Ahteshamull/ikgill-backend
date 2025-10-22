@@ -18,9 +18,9 @@ export const createAboutUs = async (req, res) => {
   }
 };
 
-export const getSingleAboutUs = async (req, res) => {
+export const getAboutUs = async (req, res) => {
     try {
-    const aboutUs = await AboutUs.findById(req.params.id);
+    const aboutUs = await AboutUs.findOne();
     res.status(200).json(aboutUs);
   } catch (error) {
     res.status(500).json({ error: "Failed to get about us" });

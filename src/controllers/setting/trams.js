@@ -18,9 +18,9 @@ export const createTrams = async (req, res) => {
   }
 };
 
-export const getSingleTrams = async (req, res) => {
+export const getTrams = async (req, res) => {
     try {
-    const trams = await Trams.findById(req.params.id);
+    const trams = await Trams.findOne();
     res.status(200).json(trams);
   } catch (error) {
     res.status(500).json({ error: "Failed to get trams" });
