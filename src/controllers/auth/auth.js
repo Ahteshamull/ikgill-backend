@@ -260,11 +260,16 @@ export const verifyResetOTP = async (req, res) => {
 
 // ----------------- Reset Password -----------------
 export const resetPassword = async (req, res) => {
-  const { newPassword, confirmPassword, resetToken: bodyToken } = req.body || {};
+  const {
+    newPassword,
+    confirmPassword,
+    resetToken: bodyToken,
+  } = req.body || {};
   const authHeader = req.headers.authorization || req.headers.Authorization;
-  const headerToken = authHeader && authHeader.startsWith("Bearer ")
-    ? authHeader.split(" ")[1]
-    : null;
+  const headerToken =
+    authHeader && authHeader.startsWith("Bearer ")
+      ? authHeader.split(" ")[1]
+      : null;
   const queryToken = req.query?.token;
   const resetToken = headerToken || bodyToken || queryToken;
 
@@ -274,7 +279,10 @@ export const resetPassword = async (req, res) => {
       .json({ error: true, message: "Reset token is required" });
   }
   if (!newPassword || !confirmPassword) {
-    return res.status(400).json({ error: true, message: "newPassword and confirmPassword are required" });
+    return res.status(400).json({
+      error: true,
+      message: "newPassword and confirmPassword are required",
+    });
   }
   if (newPassword !== confirmPassword) {
     return res
@@ -295,10 +303,11 @@ export const resetPassword = async (req, res) => {
       process.env.RESET_TOKEN_SECRET || "secret123"
     );
   } catch (err) {
-    const msg = err?.name === "TokenExpiredError" ? "Reset token expired" : "Invalid reset token";
-    return res
-      .status(401)
-      .json({ error: true, message: msg });
+    const msg =
+      err?.name === "TokenExpiredError"
+        ? "Reset token expired"
+        : "Invalid reset token";
+    return res.status(401).json({ error: true, message: msg });
   }
 
   if (decoded.purpose !== "password-reset") {
