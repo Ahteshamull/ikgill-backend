@@ -83,6 +83,7 @@ const CaseSchema = new mongoose.Schema(
             },
             teeth: [String],
             shade: [String],
+            ponticTeeth: [String],
             specialInstructions: String,
             attachments: [AttachmentSchema],
           },
