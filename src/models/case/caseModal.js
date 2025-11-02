@@ -62,6 +62,7 @@ const CaseSchema = new mongoose.Schema(
                 "Point in socket (ovate)",
               ],
             },
+            teeth: [String],
             ponticTeeth: [String],
             wingTeeth: [String],
             shade: String,
