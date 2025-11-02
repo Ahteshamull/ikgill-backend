@@ -77,7 +77,7 @@ export const createCase = async (req, res) => {
       return res.status(400).json({
         success: false,
         error: "Invalid clinicId format",
-        message: "clinicId must be a valid 23-character MongoDB ObjectId",
+        message: "clinicId must be a valid 24-character MongoDB ObjectId",
         received: req.body.clinicId,
         length: req.body.clinicId.length,
       });
