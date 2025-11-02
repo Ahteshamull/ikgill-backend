@@ -98,6 +98,16 @@ const CaseSchema = new mongoose.Schema(
           },
           bridge: {
             enabled: { type: Boolean, default: false },
+            ponticDesign: {
+              type: String,
+              enum: [
+                "Full ridge",
+                "Modify ridge lap",
+                "No contact",
+                "Point contact",
+                "Point in socket (ovate)",
+              ],
+            },
             teeth: [String],
             specialInstructions: String,
             attachments: [AttachmentSchema],
