@@ -137,7 +137,12 @@ const CaseSchema = new mongoose.Schema(
         },
         metalFree: {
           enabled: { type: Boolean, default: false },
-          type: { type: String, enum: ["Composite Inlay/Onlay"] },
+          compositeType: [
+            {
+              type: String,
+              enum: ["Composite Inlay", "Composite Onlay"],
+            },
+          ],
           teeth: [String],
           specialInstructions: String,
           attachments: [AttachmentSchema],
