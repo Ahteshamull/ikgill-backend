@@ -33,7 +33,6 @@ const pruneFields = (obj) => {
   return obj;
 };
 
-
 // Utility to set a nested path (dot notation) to an array value, creating objects along the way
 const setDeep = (obj, path, items) => {
   if (!obj || !path) return;
@@ -57,8 +56,6 @@ const setDeep = (obj, path, items) => {
     }
   }
 };
-
-
 
 export const createCase = async (req, res) => {
   try {
@@ -907,50 +904,47 @@ export const getCasesForTechnician = async (req, res) => {
 
 // Get Archived Cases
 export const getArchivedCases = async (req, res) => {
-  try {
-    const { page = 1, limit = 10 } = req.query;
-    const skip = (page - 1) * limit;
+try {
+  const { page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
 
-    const cases = await Case.find({
-      isArchived: true,
-      status: "Archived",
-    })
-      .sort({ archiveDate: -1 })
-      .skip(skip)
-      .limit(parseInt(limit))
-      .populate("clinicId", "name email")
-      .populate("assignedTechnician", "name email");
+  const cases = await Case.find({
+    isArchived: true,
+  })
+    .sort({ archiveDate: -1 })
+    .skip(skip)
+    .limit(parseInt(limit))
+    .populate("clinicId", "name email")
+    .populate("assignedTechnician", "name email");
 
-    const total = await Case.countDocuments({
-      isArchived: true,
-      status: "Archived",
-    });
+  const total = await Case.countDocuments({
+    isArchived: true,
+  });
 
-    res.status(200).json({
-      success: true,
+  res.status(200).json({
+    success: true,
 
-      data: cases,
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(total / limit),
-        totalItems: total,
-        itemsPerPage: parseInt(limit),
-      },
-    });
-  } catch (error) {
-    console.error("Error fetching archived cases:", error);
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
+    data: cases,
+    pagination: {
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(total / limit),
+      totalItems: total,
+      itemsPerPage: parseInt(limit),
+    },
+  });
+} catch (error) {
+  console.error("Error fetching archived cases:", error);
+  res.status(500).json({
+    success: false,
+    error: error.message,
+  });
+}
 };
 export const caseDownload = async (req, res) => {
-  try {
-    const caseData = await Case.findById(req.params.id).lean();
-    if (!caseData) {
-      return res.status(404).json({
-        success: false,
+try {
+  const caseData = await Case.findById(req.params.id).lean();
+  if (!caseData) {
+    return res.status(404).json({
         message: "Case not found",
         error: "Case not found",
       });

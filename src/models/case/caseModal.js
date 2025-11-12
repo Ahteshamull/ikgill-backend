@@ -266,17 +266,128 @@ const CaseSchema = new mongoose.Schema(
     // Premium Tier
     // ======================
     premium: {
- 
-        CrownBridge: {
-          pfm: {
+      CrownBridge: {
+        pfm: {
+          singleUnitCrown: {
+            enabled: { type: Boolean, default: false },
+            porcelainButtMargin: {
+              type: String,
+              enum: ["360", "Buccal Only"],
+            },
+            teeth: [String],
+            shade: [String],
+            specialInstructions: String,
+            attachments: [AttachmentSchema],
+          },
+          marylandBridge: {
+            enabled: { type: Boolean, default: false },
+            ponticDesign: {
+              type: String,
+              enum: [
+                "Full ridge",
+                "Modify ridge lap",
+                "No contact",
+                "Point contact",
+                "Point in socket (ovate)",
+              ],
+            },
+            teeth: [String],
+            ponticTeeth: [String],
+            wingTeeth: [String],
+            shade: [String],
+            specialInstructions: String,
+            attachments: [AttachmentSchema],
+          },
+          conventionalBridge: {
+            enabled: { type: Boolean, default: false },
+            ponticDesign: {
+              type: String,
+              enum: [
+                "Full ridge",
+                "Modify ridge lap",
+                "No contact",
+                "Point contact",
+                "Point in socket (ovate)",
+              ],
+            },
+            teeth: [String],
+            shade: [String],
+            ponticTeeth: [String],
+            specialInstructions: String,
+            attachments: [AttachmentSchema],
+          },
+        },
+        fullCast: {
+          materialType: { type: String, enum: ["NP (silver coloured)"] },
+          singleUnitCrown: {
+            enabled: { type: Boolean, default: false },
+            teeth: [String],
+            specialInstructions: String,
+            attachments: [AttachmentSchema],
+          },
+          bridge: {
+            enabled: { type: Boolean, default: false },
+            ponticDesign: {
+              type: String,
+              enum: [
+                "Full ridge",
+                "Modify ridge lap",
+                "No contact",
+                "Point contact",
+                "Point in socket (ovate)",
+              ],
+            },
+            teeth: [String],
+            specialInstructions: String,
+            attachments: [AttachmentSchema],
+          },
+
+          conventionalBridge: {
+            enabled: { type: Boolean, default: false },
+            ponticDesign: {
+              type: String,
+              enum: [
+                "Full ridge",
+                "Modify ridge lap",
+                "No contact",
+                "Point contact",
+                "Point in socket (ovate)",
+              ],
+            },
+            teeth: [String],
+            specialInstructions: String,
+            attachments: [AttachmentSchema],
+          },
+        },
+        metalFree: {
+          emax: {
             singleUnitCrown: {
-              enabled: { type: Boolean, default: false },
-              porcelainButtMargin: {
-                type: String,
-                enum: ["360", "Buccal Only"],
-              },
               teeth: [String],
-              shade: [String],
+              shade2D: [String],
+              shade3D: [String],
+              specialInstructions: String,
+              attachments: [AttachmentSchema],
+            },
+            veneer: {
+              teeth: [String],
+              shade2D: [String],
+              shade3D: [String],
+              specialInstructions: String,
+              attachments: [AttachmentSchema],
+            },
+          },
+          zirconia: {
+            singleUnitCrown: {
+              teeth: [String],
+              shade2D: [String],
+              shade3D: [String],
+              specialInstructions: String,
+              attachments: [AttachmentSchema],
+            },
+            veneer: {
+              teeth: [String],
+              shade2D: [String],
+              shade3D: [String],
               specialInstructions: String,
               attachments: [AttachmentSchema],
             },
@@ -318,132 +429,17 @@ const CaseSchema = new mongoose.Schema(
               attachments: [AttachmentSchema],
             },
           },
-          fullCast: {
-            materialType: { type: String, enum: ["NP (silver coloured)"] },
-            singleUnitCrown: {
-              enabled: { type: Boolean, default: false },
-              teeth: [String],
-              specialInstructions: String,
-              attachments: [AttachmentSchema],
-            },
-            bridge: {
-              enabled: { type: Boolean, default: false },
-              ponticDesign: {
-                type: String,
-                enum: [
-                  "Full ridge",
-                  "Modify ridge lap",
-                  "No contact",
-                  "Point contact",
-                  "Point in socket (ovate)",
-                ],
-              },
-              teeth: [String],
-              specialInstructions: String,
-              attachments: [AttachmentSchema],
-            },
-         
-            conventionalBridge: {
-              enabled: { type: Boolean, default: false },
-              ponticDesign: {
-                type: String,
-                enum: [
-                  "Full ridge",
-                  "Modify ridge lap",
-                  "No contact",
-                  "Point contact",
-                  "Point in socket (ovate)",
-                ],
-              },
-              teeth: [String],
-              specialInstructions: String,
-              attachments: [AttachmentSchema],
-            },
-          },
-          metalFree: {
-            
-           emax: {
-            singleUnitCrown: {
-               teeth: [String],
-            shade2D: [String],
-            shade3D: [String],
-            specialInstructions: String,
-            attachments: [AttachmentSchema],
-            },
-            veneer: {
-                 teeth: [String],
-            shade2D: [String],
-            shade3D: [String],
-            specialInstructions: String,
-            attachments: [AttachmentSchema],
-            }
-           },
-           zirconia: {
-            singleUnitCrown: {
+          compositeOnlay: {
             teeth: [String],
             shade2D: [String],
             shade3D: [String],
             specialInstructions: String,
             attachments: [AttachmentSchema],
-            },
-             veneer: {
-                 teeth: [String],
-            shade2D: [String],
-            shade3D: [String],
-            specialInstructions: String,
-            attachments: [AttachmentSchema],
-            },
-              marylandBridge: {
-            enabled: { type: Boolean, default: false },
-            ponticDesign: {
-              type: String,
-              enum: [
-                "Full ridge",
-                "Modify ridge lap",
-                "No contact",
-                "Point contact",
-                "Point in socket (ovate)",
-              ],
-            },
-            teeth: [String],
-            ponticTeeth: [String],
-            wingTeeth: [String],
-            shade: [String],
-            specialInstructions: String,
-            attachments: [AttachmentSchema],
-            },
-                  conventionalBridge: {
-            enabled: { type: Boolean, default: false },
-            ponticDesign: {
-              type: String,
-              enum: [
-                "Full ridge",
-                "Modify ridge lap",
-                "No contact",
-                "Point contact",
-                "Point in socket (ovate)",
-              ],
-            },
-            teeth: [String],
-            shade: [String],
-            ponticTeeth: [String],
-            specialInstructions: String,
-            attachments: [AttachmentSchema],
           },
-
-          
-           },
-           compositeOnlay: {
-              teeth: [String],
-            shade2D: [String],
-            shade3D: [String],
-            specialInstructions: String,
-            attachments: [AttachmentSchema],
-           }
-          },
-         },
-        dentures: {
-           construction: {
+        },
+      },
+      dentures: {
+        construction: {
           enabled: Boolean,
           selectedOptions: [
             {
@@ -470,13 +466,13 @@ const CaseSchema = new mongoose.Schema(
           finishFlexi: Boolean,
           teethSelection: [String],
           shade: {
-               shade2D: [String],
+            shade2D: [String],
             shade3D: [String],
-             },
+          },
           specialInstructions: String,
           attachments: [AttachmentSchema],
-           },
-           other: {
+        },
+        other: {
           enabled: { type: Boolean, default: false },
 
           selectedOptions: [
@@ -490,21 +486,21 @@ const CaseSchema = new mongoose.Schema(
           shade: [String],
           specialInstructions: String,
           attachments: [AttachmentSchema],
-           },
         },
-        implants: {
+      },
+      implants: {
         enabled: Boolean,
         asStandard: Boolean,
         noPostCoreOption: Boolean,
         specialInstructions: String,
         attachments: [AttachmentSchema],
-        },
-        orthodontic: {
+      },
+      orthodontic: {
         enabled: Boolean,
         type: { type: String, enum: ["Fixed retainer", "Essix retainer"] },
         attachments: [AttachmentSchema],
-        },
-        misc: {
+      },
+      misc: {
         enabled: Boolean,
         type: {
           type: String,
@@ -527,8 +523,7 @@ const CaseSchema = new mongoose.Schema(
         },
         specialInstructions: String,
         attachments: [AttachmentSchema],
-        },
-      
+      },
     },
     // ======================
     // Common Fields
@@ -589,7 +584,6 @@ const CaseSchema = new mongoose.Schema(
     },
   },
   { timestamps: true }
-
 );
 
 // Indexes
