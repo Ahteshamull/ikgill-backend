@@ -258,6 +258,10 @@ const CaseSchema = new mongoose.Schema(
       },
       Misc: {
         type: Boolean,
+        softNightGuard: {
+          upper: { type: Boolean, default: false },
+          lower: { type: Boolean, default: false },
+        },
         default: false,
       },
     },
@@ -465,10 +469,10 @@ const CaseSchema = new mongoose.Schema(
           finishAcrylic: Boolean,
           finishFlexi: Boolean,
           teethSelection: [String],
-          shade: {
-            shade2D: [String],
-            shade3D: [String],
-          },
+
+          shade2D: [String],
+          shade3D: [String],
+
           specialInstructions: String,
           attachments: [AttachmentSchema],
         },
