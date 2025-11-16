@@ -545,6 +545,10 @@ const CaseSchema = new mongoose.Schema(
         "In Progress",
         "Completed",
         "Archived",
+        "Rejected",
+        "Pending",
+        "Accepted",
+
       ],
       default: "In Progress",
     },
