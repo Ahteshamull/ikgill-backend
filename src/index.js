@@ -5,9 +5,17 @@ import dbConnect from "./config/database/dbConfig.js";
 import router from "./routes/index.js";
 import { app, server } from "./utils/socket.js";
 import express from "express";
+import cors from "cors";
 import "./utils/cron.js";
 
 dotenv.config();
+
+app.use(
+  cors({
+    origin: [process.env.CLIENT_URL],
+    credentials: true,
+  })
+);
 
 // Middlewares
 app.use(express.json());
