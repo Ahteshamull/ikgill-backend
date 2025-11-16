@@ -542,14 +542,11 @@ const CaseSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: [
-        "Pending",
-        "Accepted",
-        "Rejected",
         "In Progress",
         "Completed",
         "Archived",
       ],
-      default: "Pending",
+      default: "In Progress",
     },
     adminApproval: {
       status: {
