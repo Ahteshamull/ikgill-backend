@@ -9,11 +9,9 @@ import cors from "cors";
 import "./utils/cron.js";
 
 dotenv.config();
-
 app.use(
   cors({
-    origin: [process.env.CLIENT_URL],
-    credentials: true,
+    origin: "*",
   })
 );
 
