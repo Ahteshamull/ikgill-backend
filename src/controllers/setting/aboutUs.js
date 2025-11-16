@@ -16,19 +16,23 @@ export const createAboutUs = async (req, res) => {
       },
       { new: true, upsert: true }
     );
-    res.status(201).json(aboutUs);
+    res
+      .status(201)
+      .json({
+        message: "About Us Posted successfully",
+        success: true,
+        data: aboutUs,
+      });
   } catch (error) {
     res.status(500).json({ error: "Failed to create about us" });
   }
 };
 
 export const getAboutUs = async (req, res) => {
-    try {
+  try {
     const aboutUs = await AboutUs.findOne();
     res.status(200).json(aboutUs);
   } catch (error) {
     res.status(500).json({ error: "Failed to get about us" });
   }
 };
-
-

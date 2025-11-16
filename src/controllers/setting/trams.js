@@ -14,7 +14,11 @@ export const createTrams = async (req, res) => {
     },
     { new: true, upsert: true }
     );
-    res.status(201).json(trams);
+    res.status(201).json({
+      message: "Trams Posted successfully",
+      success: true,
+      data: trams,
+    });
   } catch (error) {
     res.status(500).json({ error: "Failed to create trams" });
   }
