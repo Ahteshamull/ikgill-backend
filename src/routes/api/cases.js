@@ -16,6 +16,8 @@ import {
   getCasesForTechnician,
   getArchivedCases,
   caseDownload,
+  getInProgressCases,
+  getCompletedCases,
 } from "../../controllers/case/case.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
 
@@ -71,5 +73,11 @@ router.get("/technician-cases/:technicianId", getCasesForTechnician); // Get cas
 
 // localhost:3000/api/v1/case/archived-cases
 router.get("/archived-cases", getArchivedCases); // Get archived cases
+
+// localhost:3000/api/v1/case/inprogress-cases
+router.get("/inprogress-cases", getInProgressCases); // Get in-progress cases
+
+// localhost:3000/api/v1/case/completed-cases
+router.get("/completed-cases", getCompletedCases)
 
 export default router;

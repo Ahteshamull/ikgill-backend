@@ -158,16 +158,20 @@ export const createCase = async (req, res) => {
         req.user?._id || parsedBody.createdByUserRole;
     }
 
-    // ScanNumber logic
+    // Lifecycle: scanNumber -> Pending admin; otherwise In Progress (admin accepted)
     if (parsedBody.scanNumber && parsedBody.scanNumber.trim() !== "") {
       caseDataToCreate.status = "Pending";
       caseDataToCreate.adminApproval = { status: "Pending" };
+      caseDataToCreate.isInProgress = false;
+      caseDataToCreate.isCompleted = false;
     } else {
-      caseDataToCreate.status = "Accepted";
+      caseDataToCreate.status = "In Progress";
       caseDataToCreate.adminApproval = {
         status: "Accepted",
         approvedAt: new Date(),
       };
+      caseDataToCreate.isInProgress = true;
+      caseDataToCreate.isCompleted = false;
     }
 
     const caseData = await Case.create(caseDataToCreate);
@@ -682,8 +686,13 @@ export const adminApproveCase = async (req, res) => {
       "adminApproval.status": action === "accept" ? "Accepted" : "Rejected",
       "adminApproval.approvedBy": adminId,
       "adminApproval.approvedAt": new Date(),
-      status: action === "accept" ? "Accepted" : "Rejected",
+      status: action === "accept" ? "In Progress" : "Rejected",
     };
+
+    if (action === "accept") {
+      updateData.isInProgress = true;
+      updateData.isCompleted = false;
+    }
 
     if (action === "reject") {
       updateData["adminApproval.rejectionReason"] = rejectionReason;
@@ -904,47 +913,122 @@ export const getCasesForTechnician = async (req, res) => {
 
 // Get Archived Cases
 export const getArchivedCases = async (req, res) => {
-try {
-  const { page = 1, limit = 10 } = req.query;
-  const skip = (page - 1) * limit;
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
 
-  const cases = await Case.find({
-    isArchived: true,
-  })
-    .sort({ archiveDate: -1 })
-    .skip(skip)
-    .limit(parseInt(limit))
-    .populate("clinicId", "name email")
-    .populate("assignedTechnician", "name email");
+    const cases = await Case.find({
+      isArchived: true,
+    })
+      .sort({ archiveDate: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate("clinicId", "name email")
+      .populate("assignedTechnician", "name email");
 
-  const total = await Case.countDocuments({
-    isArchived: true,
-  });
+    const total = await Case.countDocuments({
+      isArchived: true,
+    });
 
-  res.status(200).json({
-    success: true,
+    res.status(200).json({
+      success: true,
 
-    data: cases,
-    pagination: {
-      currentPage: parseInt(page),
-      totalPages: Math.ceil(total / limit),
-      totalItems: total,
-      itemsPerPage: parseInt(limit),
-    },
-  });
-} catch (error) {
-  console.error("Error fetching archived cases:", error);
-  res.status(500).json({
-    success: false,
-    error: error.message,
-  });
-}
+      data: cases,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        itemsPerPage: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching archived cases:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
 };
+export const getCompletedCases = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
+    const cases = await Case.find({
+      isInProgress: false,
+      isCompleted: true,
+    })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate("clinicId", "name email")
+      .populate("assignedTechnician", "name email");
+
+    const total = await Case.countDocuments({
+      isInProgress: false,
+      isCompleted: true,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: cases,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        itemsPerPage: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching completed cases:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+export const getInProgressCases = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
+    const cases = await Case.find({
+      isCompleted: false,
+      isInProgress: true,
+    })
+
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate("clinicId", "name email")
+      .populate("assignedTechnician", "name email");
+    const total = await Case.countDocuments({
+      isCompleted: false,
+      isInProgress: true,
+    });
+    res.status(200).json({
+      success: true,
+      data: cases,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        itemsPerPage: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching in-progress cases:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 export const caseDownload = async (req, res) => {
-try {
-  const caseData = await Case.findById(req.params.id).lean();
-  if (!caseData) {
-    return res.status(404).json({
+  try {
+    const caseData = await Case.findById(req.params.id).lean();
+    if (!caseData) {
+      return res.status(404).json({
         message: "Case not found",
         error: "Case not found",
       });

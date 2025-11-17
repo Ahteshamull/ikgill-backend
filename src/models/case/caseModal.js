@@ -541,16 +541,8 @@ const CaseSchema = new mongoose.Schema(
     clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic" },
     status: {
       type: String,
-      enum: [
-        "In Progress",
-        "Completed",
-        "Archived",
-        "Rejected",
-        "Pending",
-        "Accepted",
-
-      ],
-      default: "In Progress",
+      enum: ["Pending", "In Progress", "Completed", "Archived", "Rejected"],
+      default: "Pending",
     },
     adminApproval: {
       status: {
@@ -577,6 +569,11 @@ const CaseSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "UserRole",
     },
+
+    // Progress tracking
+    isInProgress: { type: Boolean, default: false },
+    isCompleted: { type: Boolean, default: false },
+    completedAt: Date,
 
     archiveDate: Date,
     isArchived: { type: Boolean, default: false },
