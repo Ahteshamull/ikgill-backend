@@ -767,6 +767,9 @@ export const assignToTechnician = async (req, res) => {
       "labManagerAssignment.assignedBy": labManagerId,
       "labManagerAssignment.assignedAt": new Date(),
       status: "In Progress",
+      isInProgress: false,
+      isCompleted: true,
+      isArchived: false,
     };
 
     const updatedCase = await Case.findByIdAndUpdate(id, updateData, {
@@ -912,27 +915,27 @@ export const getCasesForTechnician = async (req, res) => {
 };
 
 // Get Archived Cases
-export const getArchivedCases = async (req, res) => {
+
+export const getInProgressCases = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
     const skip = (page - 1) * limit;
-
     const cases = await Case.find({
-      isArchived: true,
+      isCompleted: false,
+      isInProgress: true,
     })
-      .sort({ archiveDate: -1 })
+
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
       .populate("clinicId", "name email")
       .populate("assignedTechnician", "name email");
-
     const total = await Case.countDocuments({
-      isArchived: true,
+      isCompleted: false,
+      isInProgress: true,
     });
-
     res.status(200).json({
       success: true,
-
       data: cases,
       pagination: {
         currentPage: parseInt(page),
@@ -942,13 +945,14 @@ export const getArchivedCases = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error fetching archived cases:", error);
+    console.error("Error fetching in-progress cases:", error);
     res.status(500).json({
       success: false,
       error: error.message,
     });
   }
 };
+
 export const getCompletedCases = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -987,26 +991,46 @@ export const getCompletedCases = async (req, res) => {
   }
 };
 
-export const getInProgressCases = async (req, res) => {
+const archiveCompletedCasesAfterTwoWeeks = async () => {
+  const cutoff = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+  return Case.updateMany(
+    {
+      isCompleted: true,
+      isArchived: false,
+      completedAt: { $lte: cutoff },
+    },
+    {
+      status: "Archived",
+      isInProgress: false,
+      isCompleted: false,
+      isArchived: true,
+      archiveDate: new Date(),
+    }
+  );
+};
+
+export const getArchivedCases = async (req, res) => {
   try {
+    await archiveCompletedCasesAfterTwoWeeks();
     const { page = 1, limit = 10 } = req.query;
     const skip = (page - 1) * limit;
-    const cases = await Case.find({
-      isCompleted: false,
-      isInProgress: true,
-    })
 
-      .sort({ createdAt: -1 })
+    const cases = await Case.find({
+      isArchived: true,
+    })
+      .sort({ archiveDate: -1 })
       .skip(skip)
       .limit(parseInt(limit))
       .populate("clinicId", "name email")
       .populate("assignedTechnician", "name email");
+
     const total = await Case.countDocuments({
-      isCompleted: false,
-      isInProgress: true,
+      isArchived: true,
     });
+
     res.status(200).json({
       success: true,
+
       data: cases,
       pagination: {
         currentPage: parseInt(page),
@@ -1016,7 +1040,7 @@ export const getInProgressCases = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error fetching in-progress cases:", error);
+    console.error("Error fetching archived cases:", error);
     res.status(500).json({
       success: false,
       error: error.message,
