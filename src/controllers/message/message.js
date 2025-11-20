@@ -1,4 +1,3 @@
-import Admin from "../../models/admin/adminModal.js";
 import userRoleModel from "../../models/users/userRoleModal.js";
 import Message from "../../models/message/message.js";
 import { getReceiverSocketId, io } from "../../utils/socket.js";
@@ -21,7 +20,7 @@ export const getUsersForSidebar = async (req, res) => {
     else {
       const user = await userRoleModel.findById(loggedInUserId);
       if (user && user.createdBy) {
-        const admin = await Admin.findById(user.createdBy).select("-password");
+        const admin = await userModel.findById(user.createdBy).select("-password");
         if (admin) {
           filteredUsers = [admin];
         }
@@ -65,7 +64,7 @@ export const getMessages = async (req, res) => {
 
     // Determine target type (UserRole or Admin)
     const targetUser = await userRoleModel.findById(userToChatId).select("role createdBy");
-    const targetAdmin = targetUser ? null : await Admin.findById(userToChatId).select("_id");
+    const targetAdmin = targetUser ? null : await userModel.findById(userToChatId).select("_id");
 
     // Load requester as UserRole if not admin
     const isRequesterAdmin = req.user.role === "admin";
@@ -176,7 +175,7 @@ export const sendMessage = async (req, res) => {
     }
 
     const receiverUser = await userRoleModel.findById(receiverId).select("role createdBy");
-    const receiverAdmin = receiverUser ? null : await Admin.findById(receiverId).select("_id");
+    const receiverAdmin = receiverUser ? null : await userModel.findById(receiverId).select("_id");
 
     if (isSenderAdmin) {
       // Admin → User: only if admin created that user

@@ -7,7 +7,7 @@ import SendOtp from "../../helper/sendOtp.js";
 import PasswordReset from "../../models/auth/passwordResetModal/passwordResetModal.js";
 import otpService from "../../helper/otpService.js";
 
-export const signup = async (req, res) => {
+export const adminSignup = async (req, res) => {
   let { name, email, password, role } = req.body;
 
   if (!name || !email || !password) {
@@ -48,7 +48,7 @@ export const signup = async (req, res) => {
   }
 };
 
-export const login = async (req, res) => {
+export const adminLogin = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -106,7 +106,7 @@ export const login = async (req, res) => {
     });
 };
 
-export const logout = async (req, res) => {
+export const adminLogout = async (req, res) => {
   // Clear all cookies
   res.clearCookie("token");
   res.clearCookie("accessToken");

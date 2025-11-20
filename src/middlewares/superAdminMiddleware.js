@@ -1,18 +1,25 @@
 import jwt from "jsonwebtoken";
 
 const superAdminMiddleware = (req, res, next) => {
-  const token = req.cookies.accessToken || req.headers.authorization?.split(" ")[1];
+  const token =
+    req.cookies.accessToken || req.headers.authorization?.split(" ")[1];
 
   if (token) {
     try {
-      let decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET || process.env.PRV_TOKEN);
+      let decoded = jwt.verify(
+        token,
+        process.env.ACCESS_TOKEN_SECRET || process.env.PRV_TOKEN
+      );
       let { role } = decoded;
       if (role === "superadmin") {
         next();
       } else {
         return res
           .status(403)
-          .send({ success: false, message: "Only Super Admin Can Perform This Action" });
+          .send({
+            success: false,
+            message: "Only Super Admin Can Perform This Action",
+          });
       }
     } catch (err) {
       return res.status(403).send({
@@ -21,7 +28,12 @@ const superAdminMiddleware = (req, res, next) => {
       });
     }
   } else {
-    return res.status(403).send({ success: false, message: "Token Not Found" });
+    return res
+      .status(403)
+      .send({
+        success: false,
+        message: "You are not authorized to perform this action",
+      });
   }
 };
 

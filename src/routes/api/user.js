@@ -16,10 +16,11 @@ import {
 } from "../../controllers/user/user.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
 import userAuthMiddleware from "../../middlewares/userAuthMiddleware.js";
+import superAdminMiddleware from "../../middlewares/superAdminMiddleware.js";
 
 const router = express.Router();
 //localhost:3000/api/v1/user/create-user
-router.post("/create-user", upload.any(), createUser);
+router.post("/create-user", upload.any(), superAdminMiddleware, createUser);
 
 router.put("/update-user/:id", upload.any(), updateUser);
 
@@ -27,7 +28,7 @@ router.get("/get-all-user", getAllUser);
 
 router.get("/get-user/:id", getSingleUser);
 
-router.delete("/delete-user/:id", deleteUser);
+router.delete("/delete-user/:id", superAdminMiddleware, deleteUser);
 
 router.patch("/change-user-status/:id", changeUserStatus);
 

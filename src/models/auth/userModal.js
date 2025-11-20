@@ -33,8 +33,8 @@ const userSchema = new Schema(
     },
     role: {
       type: String,
-      enum: [ "admin"],
-      default: "user",
+      enum: ["admin", "superadmin"],
+      default: "admin",
     },
     refreshToken: {
       type: String,
