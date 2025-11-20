@@ -62,8 +62,7 @@ export const updateAdmin = async (req, res) => {
     return res.status(400).json({ error: "All fields are required" });
   }
   try {
-    const admin = await userModel.findByIdAndUpdate(
-      req.params.id,
+    const admin = await userModel.findOneAndUpdate(
       { name, phone },
       { new: true, runValidators: true }
     );
@@ -98,8 +97,7 @@ export const updateAdminImage = async (req, res) => {
       .json({ error: "No image provided", message: "Upload an image file" });
   }
   try {
-    const admin = await userModel.findByIdAndUpdate(
-      req.params.id,
+    const admin = await userModel.findOneAndUpdate(
       { image: images[0] },
       { new: true }
     );

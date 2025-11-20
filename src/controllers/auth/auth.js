@@ -9,8 +9,14 @@ import otpService from "../../helper/otpService.js";
 
 export const adminSignup = async (req, res) => {
   let { name, email, password, role } = req.body;
+const files = req.files?.length ? req.files : req.file ? [req.file] : [];
 
-  if (!name || !email || !password) {
+const images = files.map((item) => `${process.env.IMAGE_URL}${item.filename}`);
+  if (!role) {
+    role = "admin";
+  }
+
+  if (!name || !email || !password || !images) {
     return res.status(404).send({ error: true, message: "Field Is Required" });
   }
 
@@ -36,11 +42,16 @@ export const adminSignup = async (req, res) => {
           email,
           password: hash,
           role,
+          image: images[0],
         });
         await user.save();
         return res
           .status(201)
-          .send({ success: true, message: "Signup Successfully", data: user });
+          .send({
+            success: true,
+            message: "Admin Created Successfully",
+            data: user,
+          });
       }
     });
   } catch (error) {
@@ -83,6 +94,7 @@ export const adminLogin = async (req, res) => {
     name: existingUser.name,
     email: existingUser.email,
     role: existingUser.role,
+    image: existingUser.image,
   };
 
   const cookieOptions = {
@@ -177,6 +189,80 @@ export const forgotPassword = async (req, res) => {
       error: true,
       message: "Failed to send OTP",
       details: err.message,
+    });
+  }
+};
+
+export const updateAdminPersonalInfo = async (req, res) => {
+  const { name, phone } = req.body;
+
+  const files = req.files?.length ? req.files : req.file ? [req.file] : [];
+
+  const images = files.map(
+    (item) => `${process.env.IMAGE_URL}${item.filename}`
+  );
+
+  if (!name || !phone) {
+    return res.status(400).json({
+      error: true,
+      message: "Name and phone are required",
+    });
+  }
+
+  try {
+    // 🔒 strict auth check
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({
+        error: true,
+        message: "Unauthorized — Token missing or invalid",
+      });
+    }
+
+    const updatePayload = {
+      name,
+      phone,
+      image: images[0],
+    };
+
+    if (images.length > 0) {
+      updatePayload.image = images[0];
+    }
+    const user = await userModel.findByIdAndUpdate(
+      req.user._id,
+      updatePayload,
+      { new: true }
+    );
+
+    const userSafe = user.toObject();
+    delete userSafe.password;
+
+    return res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: userSafe,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      message: error.message || "Failed to update user",
+    });
+  }
+};
+
+export const deleteAdmin = async (req, res) => {
+  try {
+    const admin = await userModel.findByIdAndDelete(req.params.id);
+    if (!admin) {
+      return res.status(404).json({ error: "Admin not found" });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Admin deleted successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      message: error.message || "Failed to delete admin",
     });
   }
 };
