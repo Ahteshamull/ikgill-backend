@@ -43,6 +43,9 @@ const userRoleSchema = new Schema(
       ],
       default: "dentist",
     },
+    refreshToken: {
+      type: String,
+    },
     clinic: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Clinic",
@@ -53,26 +56,25 @@ const userRoleSchema = new Schema(
     },
     country: {
       type: String,
-      
     },
     dateOfBirth: {
       type: Date,
     },
     caseListAccess: {
-      type:Boolean,
-     default:false,
+      type: Boolean,
+      default: false,
     },
     archivesAccess: {
-      type:Boolean,
-     default:false,
+      type: Boolean,
+      default: false,
     },
     sendMessagesToDoctors: {
-      type:Boolean,
-     default:false,
+      type: Boolean,
+      default: false,
     },
     qualityCheckPermission: {
-      type:Boolean,
-     default:false,
+      type: Boolean,
+      default: false,
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

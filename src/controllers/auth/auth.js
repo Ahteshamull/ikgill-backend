@@ -9,9 +9,11 @@ import otpService from "../../helper/otpService.js";
 
 export const adminSignup = async (req, res) => {
   let { name, email, password, role } = req.body;
-const files = req.files?.length ? req.files : req.file ? [req.file] : [];
+  const files = req.files?.length ? req.files : req.file ? [req.file] : [];
 
-const images = files.map((item) => `${process.env.IMAGE_URL}${item.filename}`);
+  const images = files.map(
+    (item) => `${process.env.IMAGE_URL}${item.filename}`
+  );
   if (!role) {
     role = "admin";
   }
@@ -45,13 +47,11 @@ const images = files.map((item) => `${process.env.IMAGE_URL}${item.filename}`);
           image: images[0],
         });
         await user.save();
-        return res
-          .status(201)
-          .send({
-            success: true,
-            message: "Admin Created Successfully",
-            data: user,
-          });
+        return res.status(201).send({
+          success: true,
+          message: "Admin Created Successfully",
+          data: user,
+        });
       }
     });
   } catch (error) {
@@ -569,6 +569,14 @@ export const refreshAccessToken = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
+      maxAge: 1 * 24 * 60 * 60 * 1000, // 15 minutes for access token
+    };
+
+    const refreshTokenOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 10 * 24 * 60 * 60 * 1000, // 7 days for refresh token
     };
 
     const { accessToken, refreshToken: newRefreshToken } =
@@ -577,7 +585,7 @@ export const refreshAccessToken = async (req, res) => {
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", newRefreshToken, options)
+      .cookie("refreshToken", newRefreshToken, refreshTokenOptions)
       .json({
         success: true,
         message: "Access token refreshed",

@@ -13,6 +13,7 @@ import {
   userUpdatePersonalInfo,
   userLogin,
   userChangePassword,
+  refreshAccessToken,
 } from "../../controllers/user/user.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
 import userAuthMiddleware from "../../middlewares/userAuthMiddleware.js";
@@ -47,6 +48,8 @@ router.patch(
 );
 
 router.post("/user-login", userLogin);
+
+router.post("/refresh-token", refreshAccessToken);
 
 router.patch("/user-change-password", userAuthMiddleware, userChangePassword);
 

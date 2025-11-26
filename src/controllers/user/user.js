@@ -1,5 +1,6 @@
 import userRoleModel from "../../models/users/userRoleModal.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { generateAccessAndRefreshToken } from "../auth/auth.js";
 
 export const createUser = async (req, res) => {
@@ -433,6 +434,85 @@ export const userLogin = async (req, res) => {
   }
 };
 
+export const refreshAccessToken = async (req, res) => {
+  // Get refresh token from cookies first, then from body
+  const incomingRefreshToken =
+    req.cookies?.refreshToken || (req.body && req.body.refreshToken);
+
+  if (!incomingRefreshToken) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized request - no refresh token provided",
+    });
+  }
+
+  try {
+    const decodedToken = jwt.verify(
+      incomingRefreshToken,
+      process.env.REFRESH_TOKEN_SECRET || process.env.PRV_TOKEN
+    );
+
+    const user = await userRoleModel.findById(decodedToken?._id);
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid refresh token" });
+    }
+
+    if (incomingRefreshToken !== user?.refreshToken) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Refresh token is expired or used" });
+    }
+
+    const options = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day for access token
+    };
+
+    const refreshTokenOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 10 * 24 * 60 * 60 * 1000, // 10 days for refresh token
+    };
+
+    const { accessToken, refreshToken: newRefreshToken } =
+      await generateAccessAndRefreshToken(user);
+
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", newRefreshToken, refreshTokenOptions)
+      .json({
+        success: true,
+        message: "Access token refreshed",
+        data: { accessToken, refreshToken: newRefreshToken },
+      });
+  } catch (error) {
+    // Handle JWT verification errors
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        success: false,
+        message: "Refresh token expired - please login again",
+      });
+    }
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid refresh token",
+      });
+    }
+
+    return res.status(401).json({
+      success: false,
+      message: error?.message || "Invalid refresh token",
+    });
+  }
+};
 
 export const userChangePassword = async (req, res) => {
   try {
