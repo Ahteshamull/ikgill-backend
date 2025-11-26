@@ -1,4 +1,6 @@
 import userRoleModel from "../../models/users/userRoleModal.js";
+import clinicModel from "../../models/clinic/clinic.js";
+import labModel from "../../models/lab/lab.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { generateAccessAndRefreshToken } from "../auth/auth.js";
@@ -38,6 +40,28 @@ export const createUser = async (req, res) => {
       qualityCheckPermission,
       createdBy: createdBy || req.user?._id, // Use provided createdBy or logged-in admin ID
     });
+    if (!clinic && !lab) {
+      return res.status(400).json({
+        success: false,
+        message: "Either clinic or lab is required",
+      });
+    }
+
+    // If user is assigned to a clinic, add user to clinic's users array
+    if (clinic) {
+      await clinicModel.findByIdAndUpdate(
+        clinic,
+        { $push: { users: user._id } },
+        { new: true }
+      );
+    }
+    if (lab) {
+      await labModel.findByIdAndUpdate(
+        lab,
+        { $push: { users: user._id } },
+        { new: true }
+      );
+    }
 
     return res.status(201).json({
       success: true,

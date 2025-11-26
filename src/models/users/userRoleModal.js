@@ -49,10 +49,12 @@ const userRoleSchema = new Schema(
     clinic: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Clinic",
+      required: [true],
     },
     lab: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Lab",
+      required: [true],
     },
     country: {
       type: String,

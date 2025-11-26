@@ -22,4 +22,5 @@ router.delete("/delete-clinic/:id", deleteClinic);
 
 router.patch("/change-clinic-status/:id", changeClinicStatus);
 
+
 export default router;
