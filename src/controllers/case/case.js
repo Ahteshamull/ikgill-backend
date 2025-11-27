@@ -163,6 +163,11 @@ export const createCase = async (req, res) => {
       caseDataToCreate.createdBy = req.user?._id;
     }
 
+    // Automatically set clinicId for users who belong to a clinic (dentists, practice managers, etc.)
+    if (!caseDataToCreate.clinicId && req.user?.clinic) {
+      caseDataToCreate.clinicId = req.user.clinic;
+    }
+
     // Lifecycle: scanNumber -> Pending admin; otherwise In Progress (admin accepted)
     if (parsedBody.scanNumber && parsedBody.scanNumber.trim() !== "") {
       caseDataToCreate.status = "Pending";

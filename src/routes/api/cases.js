@@ -21,11 +21,17 @@ import {
 } from "../../controllers/case/case.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
 import userAuthMiddleware from "../../middlewares/userAuthMiddleware.js";
+import { USER_ROLES, roleBasedAuth } from "../../middlewares/roleBasedAuth.js";
 
 const router = express.Router();
 // localhost:3000/api/v1/case/create-case
 // Case CRUD operations
-router.post("/create-case", userAuthMiddleware, upload.any(), createCase); // Create a new case with optional images
+router.post(
+  "/create-case",
+  roleBasedAuth([USER_ROLES.DENTIST]),
+  upload.any(),
+  createCase
+); // Only dentists can create cases
 
 // localhost:3000/api/v1/case/all-case
 router.get("/all-case", getAllCases); // Get all cases with filters
