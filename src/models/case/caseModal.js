@@ -550,7 +550,7 @@ const CaseSchema = new mongoose.Schema(
         enum: ["Pending", "Accepted", "Rejected"],
         default: "Pending",
       },
-      approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin" },
+      approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
       approvedAt: Date,
       rejectionReason: String,
     },
