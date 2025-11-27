@@ -158,6 +158,11 @@ export const createCase = async (req, res) => {
         req.user?._id || parsedBody.createdByUserRole;
     }
 
+    // Track which User created the case
+    if (!caseDataToCreate.createdBy) {
+      caseDataToCreate.createdBy = req.user?._id;
+    }
+
     // Lifecycle: scanNumber -> Pending admin; otherwise In Progress (admin accepted)
     if (parsedBody.scanNumber && parsedBody.scanNumber.trim() !== "") {
       caseDataToCreate.status = "Pending";
@@ -263,7 +268,8 @@ export const getAllCases = async (req, res) => {
       .skip(skip)
       .limit(parseInt(limit))
       .populate("clinicId", "name email")
-      .populate("assignedTo", "name email");
+      .populate("assignedTo", "name email")
+      .populate("createdBy", "name email");
 
     // Get total count
     const total = await Case.countDocuments(filter);
@@ -294,7 +300,8 @@ export const getCaseById = async (req, res) => {
 
     const caseData = await Case.findById(id)
       .populate("clinicId", "name email phone address")
-      .populate("assignedTo", "name email role");
+      .populate("assignedTo", "name email role")
+      .populate("createdBy", "name email");
 
     if (!caseData) {
       return res.status(404).json({

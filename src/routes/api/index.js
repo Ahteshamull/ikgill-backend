@@ -7,7 +7,6 @@ import admin from "./admin.js";
 import privacyPolicy from "./setting/privacyPolicy.js";
 import aboutUs from "./setting/aboutUs.js";
 import trams from "./setting/trams.js";
-import message from "./message.js";
 import cases from "./cases.js";
 import notification from "./notification.js";
 import product from "./product.js";
@@ -34,8 +33,7 @@ router.use("/setting", privacyPolicy);
 router.use("/setting", aboutUs);
 router.use("/setting", trams);
 
-// localhost:3000/api/v1/message/
-router.use("/message", message);
+
 
 // localhost:3000/api/v1/case/
 router.use("/case", cases);

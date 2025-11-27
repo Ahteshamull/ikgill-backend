@@ -20,11 +20,12 @@ import {
   getCompletedCases,
 } from "../../controllers/case/case.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
+import userAuthMiddleware from "../../middlewares/userAuthMiddleware.js";
 
 const router = express.Router();
 // localhost:3000/api/v1/case/create-case
 // Case CRUD operations
-router.post("/create-case", upload.any(), createCase); // Create a new case with optional images
+router.post("/create-case", userAuthMiddleware, upload.any(), createCase); // Create a new case with optional images
 
 // localhost:3000/api/v1/case/all-case
 router.get("/all-case", getAllCases); // Get all cases with filters
@@ -78,6 +79,6 @@ router.get("/archived-cases", getArchivedCases); // Get archived cases
 router.get("/inprogress-cases", getInProgressCases); // Get in-progress cases
 
 // localhost:3000/api/v1/case/completed-cases
-router.get("/completed-cases", getCompletedCases)
+router.get("/completed-cases", getCompletedCases);
 
 export default router;

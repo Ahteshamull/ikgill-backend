@@ -1,0 +1,309 @@
+import mongoose from "mongoose";
+import conversations from "../conversation/schema/conversation.model.js";
+import { getSocketIO, onlineUsers } from "../socket/socket.Connection.js";
+import { Provider } from "../users/schema/provider.model.js";
+import { User } from "../users/schema/user.model.js";
+import apiError from "../utility/api-error.js";
+import messages from "./schema/message.model.js";
+
+/**
+ * Create a new message
+ */
+const new_message_IntoDb = async (user, data) => {
+  if (!user?.id) {
+    throw new apiError(401, "User ID not found in token");
+  }
+
+  // Receiver may be a User or a Provider
+  const isReceiverExist =
+    (await User.findById(data.receiverId).select("_id")) ||
+    (await Provider.findById(data.receiverId).select("_id"));
+  if (!isReceiverExist) {
+    throw new apiError(404, "Receiver ID not found");
+  }
+
+  const io = getSocketIO();
+  let isNewConversation = false;
+
+  // Find or create conversation
+  let conversation = await conversations.findOne({
+    eventId: data.eventId,
+    participants: { $all: [user.id, data.receiverId] },
+  });
+
+  if (!conversation) {
+    conversation = await conversations.create({
+      eventId: data.eventId,
+      participants: [user.id, data.receiverId],
+    });
+    isNewConversation = true;
+  } else {
+    const isExistConversation = await conversations.exists({
+      _id: conversation._id,
+      participants: user.id,
+    });
+
+    if (!isExistConversation) {
+      throw new apiError(404, "Conversation not found");
+    }
+  }
+
+  // Join online users to room
+  const participants = [user.id, data.receiverId].filter(Boolean);
+  for (const participantId of participants) {
+    const socketId = onlineUsers.get(participantId.toString());
+    if (socketId) {
+      const participantSocket = io.sockets.sockets.get(socketId);
+      if (participantSocket) {
+        const roomId = conversation._id.toString();
+        participantSocket.join(roomId);
+        participantSocket.data.currentConversationId = roomId;
+      }
+    }
+  }
+
+  // Save message
+  const messageData = {
+    text: data.text,
+    imageUrl: data.imageUrl || [],
+    audioUrl: data.audioUrl || "",
+    msgByUserId: new mongoose.Types.ObjectId(user.id),
+    conversationId: conversation._id,
+  };
+  const saveMessage = await messages.create(messageData);
+
+  // Update conversation last message
+  await conversations.updateOne(
+    { _id: conversation._id },
+    { lastMessage: saveMessage._id }
+  );
+
+  // Prepare populated message payload (resolve sender as User or Provider)
+  let sender = await User.findById(
+    saveMessage.msgByUserId,
+    "fullname avatar email"
+  );
+  if (!sender) {
+    sender = await Provider.findById(
+      saveMessage.msgByUserId,
+      "fullname avatar email"
+    );
+  }
+
+  const updatedMsg = {
+    ...saveMessage.toObject(),
+    msgByUserId: sender || { _id: saveMessage.msgByUserId },
+  };
+
+  // Emit message to room
+  io.to(conversation._id.toString()).emit("new-message", updatedMsg);
+
+  return updatedMsg;
+};
+
+/**
+ * Update a message by ID
+ */
+const updateMessageById_IntoDb = async (messageId, updateData) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const updated = await messages.findByIdAndUpdate(
+      messageId,
+      { $set: updateData },
+      { new: true, session }
+    );
+    if (!updated) {
+      throw new apiError(404, "Message not found");
+    }
+
+    await conversations.updateMany(
+      { lastMessage: messageId },
+      { $set: { lastMessage: updated._id } },
+      { session }
+    );
+
+    await session.commitTransaction();
+    session.endSession();
+
+    const io = getSocketIO();
+    const conversation = await conversations.findById(updated.conversationId);
+    if (conversation) {
+      conversation.participants.forEach((participantId) => {
+        io.to(participantId.toString()).emit("message-updated", updated);
+      });
+    }
+
+    return updated;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw new apiError(500, "Error updating message", error);
+  }
+};
+
+/**
+ * Delete a message by ID
+ */
+const deleteMessageById_IntoDb = async (messageId) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const message = await messages.findById(messageId).session(session);
+    if (!message) {
+      throw new apiError(404, "Message not found");
+    }
+
+    const conversationId = message.conversationId;
+    await message.deleteOne({ _id: messageId }).session(session);
+
+    const conversation = await conversations
+      .findById(conversationId)
+      .session(session);
+    if (!conversation) {
+      throw new apiError(404, "Conversation not found");
+    }
+
+    if (conversation.lastMessage?.toString() === messageId.toString()) {
+      const newLastMessage = await messages
+        .findOne({ conversationId })
+        .sort({ createdAt: -1 })
+        .session(session);
+      conversation.lastMessage = newLastMessage ? newLastMessage._id : null;
+      await conversation.save({ session });
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    const io = getSocketIO();
+    conversation.participants.forEach((participantId) => {
+      io.to(participantId.toString()).emit("message-deleted", {
+        messageId,
+        conversationId,
+      });
+    });
+
+    return {
+      success: true,
+      message: "Message deleted successfully",
+      messageId,
+    };
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw new apiError(500, "Error deleting message", error);
+  }
+};
+
+/**
+ * Find all messages by conversation
+ */
+const findBySpecificConversationInDb = async (conversationId, query) => {
+  try {
+    const baseQuery = messages.find({ conversationId });
+
+    const page = parseInt(query?.page, 10) || 1;
+    const limit = parseInt(query?.limit, 10) || 20;
+    const skip = (page - 1) * limit;
+
+    let q = messages.find({ conversationId }).sort({ createdAt: -1 });
+    if (query?.fields) q = q.select(query.fields.split(",").join(" "));
+    q = q.skip(skip).limit(limit);
+
+    const allmessage = await q.exec();
+    const meta = await messages.countDocuments({ conversationId });
+
+    // Populate sender info for each message (User or Provider)
+    const populated = await Promise.all(
+      allmessage.map(async (msg) => {
+        let sender = await User.findById(
+          msg.msgByUserId,
+          "fullname avatar email"
+        );
+        if (!sender)
+          sender = await Provider.findById(
+            msg.msgByUserId,
+            "fullname avatar email"
+          );
+        return {
+          ...msg.toObject(),
+          msgByUserId: sender || { _id: msg.msgByUserId },
+        };
+      })
+    );
+
+    return { meta, allmessage: populated };
+  } catch (error) {
+    throw new apiError(500, "Error finding messages", error);
+  }
+};
+
+/**
+ * Send a single 1-to-1 message
+ */
+const single_new_message_IntoDb = async (user, data) => {
+  const senderId = user._id || user.id;
+  console.log("SENDERID", senderId);
+  if (!senderId) throw new apiError(400, "Sender ID missing from token");
+
+  // Receiver may be a User or Provider
+  console.log("Finding receiver...");
+  const receiver =
+    (await User.findById(data.receiverId).select("_id")) ||
+    (await Provider.findById(data.receiverId).select("_id"));
+  console.log("Receiver found:", receiver);
+  if (!receiver) throw new apiError(404, "Receiver not found");
+
+  let isNewConversation = false;
+  let conversation = await conversations.findOne({
+    participants: { $all: [senderId, data.receiverId], $size: 2 },
+  });
+
+  console.log("Conversation found:", conversation);
+
+  if (!conversation) {
+    conversation = await conversations.create({
+      participants: [senderId, data.receiverId],
+    });
+    isNewConversation = true;
+  }
+
+  const messageData = {
+    text: data.text?.trim() || "",
+    imageUrl: data.imageUrl || [],
+    audioUrl: data.audioUrl || "",
+    eventId: data.eventId || null,
+    msgByUserId: senderId,
+    conversationId: conversation._id,
+  };
+
+  const savedMessage = await messages.create(messageData);
+
+  await conversations.updateOne(
+    { _id: conversation._id },
+    { lastMessage: savedMessage._id, updatedAt: new Date() }
+  );
+
+  return {
+    success: true,
+    message: "Message sent successfully",
+    data: {
+      isNewConversation,
+      conversationId: conversation._id,
+      messageId: savedMessage._id,
+    },
+  };
+};
+
+const MessageService = {
+  new_message_IntoDb,
+  updateMessageById_IntoDb,
+  deleteMessageById_IntoDb,
+  findBySpecificConversationInDb,
+  single_new_message_IntoDb,
+};
+
+export default MessageService;
