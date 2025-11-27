@@ -49,12 +49,18 @@ const userRoleSchema = new Schema(
     clinic: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Clinic",
-      required: [true],
+      required: function () {
+        return ["dentist", "practicemanager", "practicenurse"].includes(
+          this.role
+        );
+      },
     },
     lab: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Lab",
-      required: [true],
+      required: function () {
+        return ["labmanager", "labtechnician"].includes(this.role);
+      },
     },
     country: {
       type: String,

@@ -14,9 +14,11 @@ import {
   userLogin,
   userChangePassword,
   refreshAccessToken,
+  createTechnationtoLabmanager,
 } from "../../controllers/user/user.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
 import userAuthMiddleware from "../../middlewares/userAuthMiddleware.js";
+import labManagerAuth from "../../middlewares/labManager.js";
 import superAdminMiddleware from "../../middlewares/superAdminMiddleware.js";
 
 const router = express.Router();
@@ -52,5 +54,12 @@ router.post("/user-login", userLogin);
 router.post("/refresh-token", refreshAccessToken);
 
 router.patch("/user-change-password", userAuthMiddleware, userChangePassword);
+
+router.post(
+  "/labManager-create-labTechnician",
+  labManagerAuth,
+  upload.any(),
+  createTechnationtoLabmanager
+);
 
 export default router;

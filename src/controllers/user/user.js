@@ -7,6 +7,7 @@ import { generateAccessAndRefreshToken } from "../auth/auth.js";
 
 export const createUser = async (req, res) => {
   try {
+    console.log("Request body:", req.body);
     const {
       name,
       email,
@@ -21,6 +22,27 @@ export const createUser = async (req, res) => {
       qualityCheckPermission,
       createdBy,
     } = req.body || {};
+
+  
+
+    // For lab roles, if no lab is provided, we'll skip lab assignment for now
+    // The admin can assign lab later if needed
+    let userLab = lab;
+    if (["labmanager", "labtechnician"].includes(role) && !lab) {
+    
+      userLab = null;
+    }
+
+    // For clinic roles, if no clinic is provided, we'll skip clinic assignment for now
+    let userClinic = clinic;
+    if (
+      ["dentist", "practicemanager", "practicenurse"].includes(role) &&
+      !clinic
+    ) {
+    
+      userClinic = null;
+    }
+
     const images = req.files.map(
       (item) => `${process.env.IMAGE_URL}${item.filename}`
     );
@@ -31,8 +53,8 @@ export const createUser = async (req, res) => {
       password: hashedPassword,
       phone,
       role,
-      clinic,
-      lab,
+      clinic: userClinic,
+      lab: userLab,
       image: images,
       caseListAccess,
       archivesAccess,
@@ -40,24 +62,18 @@ export const createUser = async (req, res) => {
       qualityCheckPermission,
       createdBy: createdBy || req.user?._id, // Use provided createdBy or logged-in admin ID
     });
-    if (!clinic && !lab) {
-      return res.status(400).json({
-        success: false,
-        message: "Either clinic or lab is required",
-      });
-    }
 
-    // If user is assigned to a clinic, add user to clinic's users array
-    if (clinic) {
+    // Only add to clinic/lab users array if they have one assigned
+    if (userClinic) {
       await clinicModel.findByIdAndUpdate(
-        clinic,
+        userClinic,
         { $push: { users: user._id } },
         { new: true }
       );
     }
-    if (lab) {
+    if (userLab) {
       await labModel.findByIdAndUpdate(
-        lab,
+        userLab,
         { $push: { users: user._id } },
         { new: true }
       );
@@ -621,6 +637,85 @@ export const userChangePassword = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Password change failed.",
+      error: error.message,
+    });
+  }
+};
+
+export const createTechnationtoLabmanager = async (req, res) => {
+  try {
+    console.log("Request body:", req.body);
+    console.log("Request files:", req.files);
+
+    const {
+      name,
+      email,
+      password,
+      phone,
+
+      caseListAccess,
+      archivesAccess,
+      sendMessagesToDoctors,
+      qualityCheckPermission,
+      createdBy,
+    } = req.body || {};
+
+    console.log("Extracted fields:", { name, email, password, phone });
+
+    // Validate required fields
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, email, and password are required",
+        received: { name, email, password: password ? "***" : "missing" },
+      });
+    }
+
+    // Automatically set role to labtechnician for lab manager created users
+    const userRole = "labtechnician";
+    console.log("Setting role to:", userRole);
+
+    // For lab technicians, lab is optional but we'll use lab manager's lab if available
+    const labManagerLab = req.user?.lab;
+    console.log("Lab manager's lab:", labManagerLab);
+
+    // For lab technicians, clinic is optional but we'll use lab manager's clinic if available
+    const labManagerClinic = req.user?.clinic;
+    console.log("Lab manager's clinic:", labManagerClinic);
+
+    const images = req.files
+      ? req.files.map((item) => `${process.env.IMAGE_URL}${item.filename}`)
+      : [];
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    console.log("Creating user with role:", userRole);
+    const user = await userRoleModel.create({
+      name,
+      email,
+      password: hashedPassword,
+      phone,
+      role: userRole, // Always set to labtechnician
+      clinic: labManagerClinic || null, // Use lab manager's clinic if available
+      lab: labManagerLab || null, // Use lab manager's lab if available
+      image: images,
+      caseListAccess,
+      archivesAccess,
+      sendMessagesToDoctors,
+      qualityCheckPermission,
+      createdBy: createdBy || req.user?._id, // Use provided createdBy or logged-in admin ID
+    });
+
+    console.log("Created user role:", user.role);
+
+    return res.status(201).json({
+      success: true,
+      message: "Technician created successfully",
+      data: user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "User creation failed",
       error: error.message,
     });
   }
