@@ -23,13 +23,10 @@ export const createUser = async (req, res) => {
       createdBy,
     } = req.body || {};
 
-  
-
     // For lab roles, if no lab is provided, we'll skip lab assignment for now
     // The admin can assign lab later if needed
     let userLab = lab;
     if (["labmanager", "labtechnician"].includes(role) && !lab) {
-    
       userLab = null;
     }
 
@@ -39,7 +36,6 @@ export const createUser = async (req, res) => {
       ["dentist", "practicemanager", "practicenurse"].includes(role) &&
       !clinic
     ) {
-    
       userClinic = null;
     }
 
@@ -98,10 +94,10 @@ export const getAllUser = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
+    const totalUsers = await userRoleModel.countDocuments();
     // Sort order: 'asc' for ascending, 'desc' for descending (default)
     const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
 
-    const totalUsers = await userRoleModel.countDocuments();
     const user = await userRoleModel
       .find()
       .skip(skip)
@@ -118,6 +114,7 @@ export const getAllUser = async (req, res) => {
         currentPage: page,
         totalPages,
         limit,
+        totalUsers
       },
     });
   } catch (error) {

@@ -3,12 +3,15 @@ import {
   changeClinicStatus,
   createClinic,
   deleteClinic,
+  getCaseByClinicId,
   getClinic,
   singleClinicById,
   updateClinic,
 } from "../../controllers/clinic/clinic.js";
 import superAdminMiddleware from "../../middlewares/superAdminMiddleware.js";
 import userAuthMiddleware from "../../middlewares/userAuthMiddleware.js";
+import { roleBasedAuth } from "../../middlewares/roleBasedAuth.js";
+import { USER_ROLES } from "../../middlewares/roleBasedAuth.js";
 
 const router = express.Router();
 //localhost:3000/api/v1/lab/create-lab
@@ -23,5 +26,11 @@ router.get("/single-clinic/:id", singleClinicById);
 router.delete("/delete-clinic/:id", deleteClinic);
 
 router.patch("/change-clinic-status/:id", changeClinicStatus);
+
+router.get(
+  "/get-caseBy-clinic/:id",
+  roleBasedAuth(Object.values(USER_ROLES)),
+  getCaseByClinicId
+);
 
 export default router;

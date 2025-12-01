@@ -24,6 +24,12 @@ const clinicSchema = new Schema(
       enum: ["active", "inactive"],
       default: "active",
     },
+    case: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"Case"
+      }
+    ],
     users: [
       {
         type: mongoose.Schema.Types.ObjectId,

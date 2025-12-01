@@ -7,11 +7,11 @@ export const USER_ROLES = {
   ADMIN: "admin",
   SUPERADMIN: "superadmin",
   DENTIST: "dentist",
-  PRACTICE_MANAGER: "practice_manager",
-  PRACTICE_NURSE: "practice_nurse",
-  LAB_MANAGER: "lab_manager",
-  LAB_TECHNICIAN: "lab_technician",
-  LAB_QUALITY_CHECK: "lab_quality_check",
+  PRACTICE_MANAGER: "practicemanager",
+  PRACTICE_NURSE: "practicenurse",
+  LAB_MANAGER: "labmanager",
+  LAB_TECHNICIAN: "labtechnician",
+  LAB_QUALITY_CHECK: "labqualitycheck",
 };
 
 // Role-based permissions

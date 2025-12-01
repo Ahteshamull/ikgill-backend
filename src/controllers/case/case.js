@@ -1,6 +1,7 @@
 import Case from "../../models/case/caseModal.js";
 import mongoose from "mongoose";
 import Notification from "../../models/notification/notification.js";
+import Clinic from "../../models/clinic/clinic.js";
 import { io } from "../../utils/socket.js";
 import { jsPDF } from "jspdf"; // optional if you want jsPDF
 import PDFDocument from "pdfkit"; // recommended
@@ -65,6 +66,29 @@ export const createCase = async (req, res) => {
       fileName: item.originalname,
       uploadedAt: new Date(),
     }));
+
+    // Clinic-based validation for dentist users
+    if (req.user && req.user.role === "dentist") {
+      // Dentists can only create cases for their own clinic
+      if (req.body.clinicId && req.user.clinic) {
+        if (req.body.clinicId !== req.user.clinic.toString()) {
+          return res.status(403).json({
+            success: false,
+            error: "Access denied",
+            message: "Dentists can only create cases for their own clinic",
+          });
+        }
+      }
+
+      // If dentist has no clinic assigned, they cannot create cases
+      if (!req.user.clinic) {
+        return res.status(403).json({
+          success: false,
+          error: "Access denied",
+          message: "Dentists must be assigned to a clinic to create cases",
+        });
+      }
+    }
 
     // Validate ObjectId fields if provided
     if (
@@ -186,6 +210,20 @@ export const createCase = async (req, res) => {
 
     const caseData = await Case.create(caseDataToCreate);
 
+    // Add case to clinic's cases array if clinicId is present
+    if (caseData.clinicId) {
+      try {
+        await Clinic.findByIdAndUpdate(
+          caseData.clinicId,
+          { $push: { case: caseData._id } },
+          { new: true }
+        );
+      } catch (clinicUpdateErr) {
+        console.error("Error adding case to clinic:", clinicUpdateErr);
+        // Don't fail the request if clinic update fails, but log it
+      }
+    }
+
     // Notification
     try {
       const notif = await Notification.create({
@@ -260,8 +298,53 @@ export const getAllCases = async (req, res) => {
     if (selectedTier) filter.selectedTier = selectedTier;
     if (patientID) filter.patientID = new RegExp(patientID, "i");
     if (caseNumber) filter.caseNumber = new RegExp(caseNumber, "i");
-    if (clinicId) filter.clinicId = clinicId;
     if (caseType) filter.caseType = caseType; // New | Continuation | Remake
+
+    // Clinic-based filtering for authenticated users
+    if (req.user) {
+      // Roles that can only see cases from their own clinic
+      const clinicRestrictedRoles = [
+        "dentist",
+        "practicemanager",
+        "practicenurse",
+      ];
+
+      if (clinicRestrictedRoles.includes(req.user.role)) {
+        // For dentist, practice manager, practice nurse - filter by their clinic
+        if (req.user.clinic) {
+          filter.clinicId = req.user.clinic;
+        } else {
+          // If user has no clinic assigned, return empty results
+          return res.status(200).json({
+            success: true,
+            data: [],
+            pagination: {
+              currentPage: parseInt(page),
+              totalPages: 0,
+              totalItems: 0,
+              itemsPerPage: parseInt(limit),
+            },
+          });
+        }
+      }
+      // Lab Manager and Lab Technician can see all cases from all clinics
+      // No clinic filtering needed for lab roles
+
+      // For admin/superadmin - respect explicit clinicId filter if provided
+      else if (["admin", "superadmin"].includes(req.user.role) && clinicId) {
+        filter.clinicId = clinicId;
+      }
+      // For lab roles (labmanager, labtechnician) - respect explicit clinicId filter if provided
+      else if (
+        ["labmanager", "labtechnician"].includes(req.user.role) &&
+        clinicId
+      ) {
+        filter.clinicId = clinicId;
+      }
+    } else if (clinicId) {
+      // For unauthenticated requests, respect explicit clinicId filter
+      filter.clinicId = clinicId;
+    }
 
     // Calculate pagination
     const skip = (page - 1) * limit;
@@ -313,6 +396,34 @@ export const getCaseById = async (req, res) => {
         success: false,
         error: "Case not found",
       });
+    }
+
+    // Clinic-based access control for authenticated users
+    if (req.user) {
+      // Roles that can only see cases from their own clinic
+      const clinicRestrictedRoles = [
+        "dentist",
+        "practicemanager",
+        "practicenurse",
+      ];
+
+      if (clinicRestrictedRoles.includes(req.user.role)) {
+        // For dentist, practice manager, practice nurse - check if case belongs to their clinic
+        if (
+          !req.user.clinic ||
+          !caseData.clinicId ||
+          caseData.clinicId._id.toString() !== req.user.clinic.toString()
+        ) {
+          return res.status(403).json({
+            success: false,
+            error: "Access denied",
+            message: "You can only view cases from your own clinic",
+          });
+        }
+      }
+      // Lab Manager and Lab Technician can view all cases from all clinics
+      // No access control needed for lab roles
+      // Admin and Superadmin can also view all cases
     }
 
     res.status(200).json({
@@ -461,6 +572,38 @@ export const getCasesByPatient = async (req, res) => {
     const filter = { patientID };
     if (caseType) filter.caseType = caseType; // New | Continuation | Remake
 
+    // Clinic-based filtering for authenticated users
+    if (req.user) {
+      // Roles that can only see cases from their own clinic
+      const clinicRestrictedRoles = [
+        "dentist",
+        "practicemanager",
+        "practicenurse",
+      ];
+
+      if (clinicRestrictedRoles.includes(req.user.role)) {
+        // For dentist, practice manager, practice nurse - filter by their clinic
+        if (req.user.clinic) {
+          filter.clinicId = req.user.clinic;
+        } else {
+          // If user has no clinic assigned, return empty results
+          return res.status(200).json({
+            success: true,
+            count: 0,
+            data: [],
+            pagination: {
+              currentPage: parseInt(page),
+              totalPages: 0,
+              totalItems: 0,
+              itemsPerPage: parseInt(limit),
+            },
+          });
+        }
+      }
+      // Lab Manager and Lab Technician can see all cases from all clinics
+      // No clinic filtering needed for lab roles
+    }
+
     const skip = (page - 1) * limit;
 
     const [items, total] = await Promise.all([
@@ -498,14 +641,55 @@ export const getCasesByClinic = async (req, res) => {
   try {
     const { clinicId } = req.params;
 
-    const cases = await Case.find({ clinicId })
-      .sort({ createdAt: -1 })
-      .populate("assignedTo", "name email");
+    // First try to get clinic and populate its cases
+    const clinic = await Clinic.findById(clinicId).populate({
+      path: "case",
+      populate: [
+        { path: "assignedTo", select: "name email" },
+        { path: "createdBy", select: "name email" },
+      ],
+    });
+
+    if (!clinic) {
+      return res.status(404).json({
+        success: false,
+        error: "Clinic not found",
+      });
+    }
+
+    // Clinic-based access control for authenticated users
+    if (req.user) {
+      // Roles that can only see cases from their own clinic
+      const clinicRestrictedRoles = [
+        "dentist",
+        "practicemanager",
+        "practicenurse",
+      ];
+
+      if (clinicRestrictedRoles.includes(req.user.role)) {
+        // For dentist, practice manager, practice nurse - check if they belong to this clinic
+        if (!req.user.clinic || req.user.clinic.toString() !== clinicId) {
+          return res.status(403).json({
+            success: false,
+            error: "Access denied",
+            message: "You can only view cases from your own clinic",
+          });
+        }
+      }
+      // Lab Manager and Lab Technician can view all cases from all clinics
+      // No access control needed for lab roles
+      // Admin and Superadmin can also view all clinics
+    }
 
     res.status(200).json({
       success: true,
-      count: cases.length,
-      data: cases,
+      count: clinic.case.length,
+      data: clinic.case,
+      clinicInfo: {
+        name: clinic.name,
+        email: clinic.email,
+        status: clinic.clinicStatus,
+      },
     });
   } catch (error) {
     console.error("Error fetching clinic cases:", error);
@@ -1082,88 +1266,4 @@ export const caseDownload = async (req, res) => {
     });
   }
 };
-// export const caseDownload = async (req, res) => {
-//   try {
-//     const caseData = await Case.findById(req.params.id).lean();
-//     if (!caseData) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Case not found",
-//       });
-//     }
 
-//     // PDF Setup
-//     const doc = new PDFDocument({ margin: 40 });
-//     res.setHeader("Content-Type", "application/pdf");
-//     res.setHeader(
-//       "Content-Disposition",
-//       `attachment; filename=case_${caseData._id}.pdf`
-//     );
-//     doc.pipe(res);
-
-//     // Title
-//     doc.fontSize(18).text("CASE DETAILS", { align: "center", underline: true });
-//     doc.moveDown(1.5);
-
-//     // Helper function to draw one row
-//     const drawRow = (label, value) => {
-//       doc
-//         .fontSize(11)
-//         .text(label, { continued: true, width: 200 })
-//         .text(value || "-", { align: "right" });
-//       doc.moveDown(0.3);
-//       doc
-//         .moveTo(40, doc.y)
-//         .lineTo(560, doc.y)
-//         .strokeColor("#000")
-//         .lineWidth(0.5)
-//         .stroke();
-//       doc.moveDown(0.3);
-//     };
-
-//     // Each field (You can modify according to your Case Schema)
-//     drawRow("NEW CASE/CONTINUATION/REMARK", caseData.caseType);
-//     drawRow("PATIENT ID", caseData.patientID);
-//     drawRow("GENDER", caseData.gender);
-//     drawRow("AGE", caseData.age);
-//     drawRow("SCAN NUMBER", caseData.scanNumber);
-//     drawRow("STANDARD/PREMIUM", caseData.selectedTier);
-//     drawRow("CROWN+BRIDGE/DENTURE/MISE", caseData.workCategory);
-//     drawRow("PFM/FULL CAST/METAL FREE", caseData.standard_pfm?.materialType);
-//     drawRow(
-//       "SINGLE UNIT CROWN/MARYLAND/CONV BRIDGE",
-//       caseData.standard_pfm?.unitType
-//     );
-//     drawRow("PORCELAIN BUTT MARGIN 360/BUCCAL ONLY", caseData.porcelainMargin);
-//     drawRow("TOOTH NUMBER", caseData.toothNumber);
-//     drawRow("SHADE", caseData.shade);
-//     drawRow("SPECIAL INSTRUCTION", caseData.specialInstruction || "-");
-
-//     // Attachments section (if image exists)
-//     if (caseData.attachment && caseData.attachment !== "") {
-//       doc.moveDown(1);
-//       doc.fontSize(12).text("ATTACHMENTS:", { underline: true });
-//       try {
-//         doc.image(caseData.attachment, {
-//           fit: [200, 200],
-//           align: "center",
-//           valign: "center",
-//         });
-//       } catch {
-//         doc.text("(Attachment could not be loaded)");
-//       }
-//     }
-
-//     // Footer
-//     doc.moveDown(2);
-//     doc.fontSize(10).fillColor("gray").text("LAB SECTION", { align: "left" });
-
-//     doc.end();
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Case downloading failed",
-//       error: error.message,
-//     });
-//   }
-// };

@@ -20,7 +20,6 @@ import {
   getCompletedCases,
 } from "../../controllers/case/case.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
-import userAuthMiddleware from "../../middlewares/userAuthMiddleware.js";
 import { USER_ROLES, roleBasedAuth } from "../../middlewares/roleBasedAuth.js";
 
 const router = express.Router();
@@ -34,10 +33,14 @@ router.post(
 ); // Only dentists can create cases
 
 // localhost:3000/api/v1/case/all-case
-router.get("/all-case", getAllCases); // Get all cases with filters
+router.get("/all-case", roleBasedAuth(Object.values(USER_ROLES)), getAllCases); // Get all cases with filters
 
 // localhost:3000/api/v1/case/single-case/:id
-router.get("/single-case/:id", getCaseById); // Get single case by ID
+router.get(
+  "/single-case/:id",
+  roleBasedAuth(Object.values(USER_ROLES)),
+  getCaseById
+); // Get single case by ID
 
 // localhost:3000/api/v1/case/download/:id
 router.get("/download/:id", caseDownload); // Download case as PDF (text + images)
@@ -57,10 +60,18 @@ router.patch("/update-case-status/:id", updateCaseStatus); // Update case status
 
 // Query operations
 // localhost:3000/api/v1/case/get-cases-by-patient/:patientID
-router.get("/get-cases-by-patient/:patientID", getCasesByPatient); // Get cases by patient
+router.get(
+  "/get-cases-by-patient/:patientID",
+  roleBasedAuth(Object.values(USER_ROLES)),
+  getCasesByPatient
+); // Get cases by patient
 
 // localhost:3000/api/v1/case/get-cases-by-clinic/:clinicId
-router.get("/get-cases-by-clinic/:clinicId", getCasesByClinic);
+router.get(
+  "/get-cases-by-clinic/:clinicId",
+  roleBasedAuth(Object.values(USER_ROLES)),
+  getCasesByClinic
+);
 
 // Workflow Management Routes
 // localhost:3000/api/v1/case/admin-approve/:id
