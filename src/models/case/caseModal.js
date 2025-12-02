@@ -508,23 +508,21 @@ const CaseSchema = new mongoose.Schema(
         enabled: Boolean,
         type: {
           type: String,
-          enum: [
-            "Study models",
-            "Sports Guard",
-            "TW",
-            "Night Guard",
-            "Vacuum formed Stent",
-            "Re-etch Crown/Bridge",
-          ],
         },
         studyModels: { diagnosticWax: Boolean, selectedTeeth: [String] },
-        sportsGuard: { colour: String },
+        sportsGuard: { teethColor: [AttachmentSchema] },
         tw: { withReservoirs: Boolean, withoutReservoirs: Boolean },
         nightGuard: {
-          material: { type: String, enum: ["Soft", "Hard", "Hard Acrylic"] },
-          withReservoir: Boolean,
-          withoutReservoir: Boolean,
+          type: String,
+          enum: ["Soft", "Hard Acrylic"],
         },
+        vacuum: {
+          description: String,
+        },
+        reEtch: {
+          type: String, enum: ["Crown", "Bridge"] 
+        }
+        ,
         specialInstructions: String,
         attachments: [AttachmentSchema],
       },
