@@ -310,21 +310,26 @@ export const getAllCases = async (req, res) => {
       ];
 
       if (clinicRestrictedRoles.includes(req.user.role)) {
-        // For dentist, practice manager, practice nurse - filter by their clinic
-        if (req.user.clinic) {
-          filter.clinicId = req.user.clinic;
+        // For dentist - only show cases created by themselves
+        if (req.user.role === "dentist") {
+          filter.createdBy = req.user._id;
         } else {
-          // If user has no clinic assigned, return empty results
-          return res.status(200).json({
-            success: true,
-            data: [],
-            pagination: {
-              currentPage: parseInt(page),
-              totalPages: 0,
-              totalItems: 0,
-              itemsPerPage: parseInt(limit),
-            },
-          });
+          // For practice manager, practice nurse - filter by their clinic
+          if (req.user.clinic) {
+            filter.clinicId = req.user.clinic;
+          } else {
+            // If user has no clinic assigned, return empty results
+            return res.status(200).json({
+              success: true,
+              data: [],
+              pagination: {
+                currentPage: parseInt(page),
+                totalPages: 0,
+                totalItems: 0,
+                itemsPerPage: parseInt(limit),
+              },
+            });
+          }
         }
       }
       // Lab Manager and Lab Technician can see all cases from all clinics
@@ -1266,4 +1271,3 @@ export const caseDownload = async (req, res) => {
     });
   }
 };
-

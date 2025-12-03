@@ -11,6 +11,7 @@ import cases from "./cases.js";
 import notification from "./notification.js";
 import product from "./product.js";
 import search from "./search.js";
+import message from "./message.js";
 const router = express.Router();
 
 // localhost:3000/api/v1/auth/
@@ -33,8 +34,6 @@ router.use("/setting", privacyPolicy);
 router.use("/setting", aboutUs);
 router.use("/setting", trams);
 
-
-
 // localhost:3000/api/v1/case/
 router.use("/case", cases);
 
@@ -46,5 +45,8 @@ router.use("/notification", notification);
 
 // localhost:3000/api/v1/search/
 router.use("/search", search);
+
+// localhost:3000/api/v1/message/
+router.use("/message", message);
 
 export default router;
