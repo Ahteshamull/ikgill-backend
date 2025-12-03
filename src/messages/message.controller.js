@@ -44,12 +44,26 @@ const single_new_message = async (req, res) => {
   res.status(200).json(new (200, result, "Successfully sent the message")());
 };
 
+const get_my_single_specific_chatList_controller = async (req, res) => {
+  const result = await MessageService.get_my_single_specific_chatList(
+    req.params.conversationId,
+    req.query
+  );
+
+  res.status(200).json({
+    success: true,
+    message: "Successfully Find My Chat List",
+    data: result,
+  });
+};
+
 const MessageController = {
   new_message,
   updateMessageById,
   deleteMessageById,
   findBySpecificConversation,
   single_new_message,
+  get_my_single_specific_chatList_controller,
 };
 
 export default MessageController;

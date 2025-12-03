@@ -3,7 +3,7 @@ import { Server as SocketIO } from "socket.io";
 
 import handleChatEvents from "./handleChatEvent.js";
 import userRoleModal from "../models/users/userRoleModal.js";
-import conversations from "./../models/message/message";
+import conversations from "./../models/message/message.js";
 
 let io;
 const onlineUsers = new Map();

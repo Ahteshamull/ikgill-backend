@@ -1,25 +1,24 @@
 import mongoose from "mongoose";
-import conversations from "../conversation/schema/conversation.model.js";
-import { getSocketIO, onlineUsers } from "../socket/socket.Connection.js";
-import { Provider } from "../users/schema/provider.model.js";
-import { User } from "../users/schema/user.model.js";
-import apiError from "../utility/api-error.js";
 import messages from "./schema/message.model.js";
+import conversations from "../models/message/message.js";
+import userRoleModal from "../models/users/userRoleModal.js";
+import { onlineUsers, getSocketIO } from "../socket/socket.Connection.js";
 
 /**
  * Create a new message
  */
 const new_message_IntoDb = async (user, data) => {
   if (!user?.id) {
-    throw new apiError(401, "User ID not found in token");
+    throw new Error("User ID not found in token");
   }
 
-  // Receiver may be a User or a Provider
-  const isReceiverExist =
-    (await User.findById(data.receiverId).select("_id")) ||
-    (await Provider.findById(data.receiverId).select("_id"));
+  // Receiver may be a User
+  const isReceiverExist = await userRoleModal
+    .findById(data.receiverId)
+    .select("_id");
+
   if (!isReceiverExist) {
-    throw new apiError(404, "Receiver ID not found");
+    throw new Error("Receiver ID not found");
   }
 
   const io = getSocketIO();
@@ -44,7 +43,7 @@ const new_message_IntoDb = async (user, data) => {
     });
 
     if (!isExistConversation) {
-      throw new apiError(404, "Conversation not found");
+      throw new Error("Conversation not found");
     }
   }
 
@@ -78,17 +77,11 @@ const new_message_IntoDb = async (user, data) => {
     { lastMessage: saveMessage._id }
   );
 
-  // Prepare populated message payload (resolve sender as User or Provider)
-  let sender = await User.findById(
+  // Prepare populated message payload (resolve sender as UserRole)
+  let sender = await userRoleModal.findById(
     saveMessage.msgByUserId,
     "fullname avatar email"
   );
-  if (!sender) {
-    sender = await Provider.findById(
-      saveMessage.msgByUserId,
-      "fullname avatar email"
-    );
-  }
 
   const updatedMsg = {
     ...saveMessage.toObject(),
@@ -115,7 +108,7 @@ const updateMessageById_IntoDb = async (messageId, updateData) => {
       { new: true, session }
     );
     if (!updated) {
-      throw new apiError(404, "Message not found");
+      throw new Error("Message not found");
     }
 
     await conversations.updateMany(
@@ -139,7 +132,7 @@ const updateMessageById_IntoDb = async (messageId, updateData) => {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    throw new apiError(500, "Error updating message", error);
+    throw new Error("Error updating message");
   }
 };
 
@@ -153,7 +146,7 @@ const deleteMessageById_IntoDb = async (messageId) => {
   try {
     const message = await messages.findById(messageId).session(session);
     if (!message) {
-      throw new apiError(404, "Message not found");
+      throw new Error("Message not found");
     }
 
     const conversationId = message.conversationId;
@@ -163,7 +156,7 @@ const deleteMessageById_IntoDb = async (messageId) => {
       .findById(conversationId)
       .session(session);
     if (!conversation) {
-      throw new apiError(404, "Conversation not found");
+      throw new Error("Conversation not found");
     }
 
     if (conversation.lastMessage?.toString() === messageId.toString()) {
@@ -194,7 +187,7 @@ const deleteMessageById_IntoDb = async (messageId) => {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    throw new apiError(500, "Error deleting message", error);
+    throw new Error("Error deleting message");
   }
 };
 
@@ -216,18 +209,13 @@ const findBySpecificConversationInDb = async (conversationId, query) => {
     const allmessage = await q.exec();
     const meta = await messages.countDocuments({ conversationId });
 
-    // Populate sender info for each message (User or Provider)
+    // Populate sender info for each message (UserRole only)
     const populated = await Promise.all(
       allmessage.map(async (msg) => {
-        let sender = await User.findById(
+        let sender = await userRoleModal.findById(
           msg.msgByUserId,
           "fullname avatar email"
         );
-        if (!sender)
-          sender = await Provider.findById(
-            msg.msgByUserId,
-            "fullname avatar email"
-          );
         return {
           ...msg.toObject(),
           msgByUserId: sender || { _id: msg.msgByUserId },
@@ -237,7 +225,7 @@ const findBySpecificConversationInDb = async (conversationId, query) => {
 
     return { meta, allmessage: populated };
   } catch (error) {
-    throw new apiError(500, "Error finding messages", error);
+    throw new Error("Error finding messages");
   }
 };
 
@@ -247,15 +235,17 @@ const findBySpecificConversationInDb = async (conversationId, query) => {
 const single_new_message_IntoDb = async (user, data) => {
   const senderId = user._id || user.id;
   console.log("SENDERID", senderId);
-  if (!senderId) throw new apiError(400, "Sender ID missing from token");
+  if (!senderId) {
+    throw new Error("Sender ID missing from token");
+  }
 
-  // Receiver may be a User or Provider
+  // Receiver must be a UserRole
   console.log("Finding receiver...");
-  const receiver =
-    (await User.findById(data.receiverId).select("_id")) ||
-    (await Provider.findById(data.receiverId).select("_id"));
+  const receiver = await userRoleModal.findById(data.receiverId).select("_id");
   console.log("Receiver found:", receiver);
-  if (!receiver) throw new apiError(404, "Receiver not found");
+  if (!receiver) {
+    throw new Error("Receiver not found");
+  }
 
   let isNewConversation = false;
   let conversation = await conversations.findOne({
@@ -298,12 +288,49 @@ const single_new_message_IntoDb = async (user, data) => {
   };
 };
 
+const get_my_single_specific_chatList = async (conversationId, query) => {
+  try {
+    const page = parseInt(query?.page) || 1;
+    const limit = parseInt(query?.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // Find conversation first to verify it exists
+    const conversation = await conversations.findById(conversationId);
+    if (!conversation) {
+      throw new Error("Conversation not found");
+    }
+
+    // Get messages with pagination
+    const messagesList = await messages
+      .find({ conversationId })
+      .populate("msgByUserId", "name image")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await messages.countDocuments({ conversationId });
+
+    return {
+      messages: messagesList,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalMessages: total,
+        messagesPerPage: limit,
+      },
+    };
+  } catch (error) {
+    throw new Error("Error getting specific chat: " + error.message);
+  }
+};
+
 const MessageService = {
   new_message_IntoDb,
   updateMessageById_IntoDb,
   deleteMessageById_IntoDb,
   findBySpecificConversationInDb,
   single_new_message_IntoDb,
+  get_my_single_specific_chatList,
 };
 
 export default MessageService;

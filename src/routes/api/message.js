@@ -1,6 +1,7 @@
 import express from "express";
 import userAuthMiddleware from "../../middlewares/userAuthMiddleware.js";
 import ConversationController from "../../controllers/message/messageController.js";
+import MessageController from "../../messages/message.controller.js";
 
 const router = express.Router();
 
@@ -33,6 +34,12 @@ router.get(
   "/get_group_conversation/:eventId",
   userAuthMiddleware,
   ConversationController.getGroupConversationList
+);
+
+router.get(
+  "/find_my_single_chat_list/:conversationId",
+  userAuthMiddleware,
+  MessageController.get_my_single_specific_chatList_controller
 );
 
 export default router;

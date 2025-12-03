@@ -4,6 +4,7 @@ const conversationSchema = new Schema(
   {
     participants: {
       type: [Schema.Types.ObjectId],
+      ref: "UserRole",
       // participants can be either a User or a Provider. We store ObjectIds
       // and resolve the concrete model at service/controller level.
       required: true,

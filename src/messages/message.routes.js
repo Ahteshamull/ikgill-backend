@@ -1,6 +1,5 @@
 import express from "express";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
-import apiError from "../utility/api-error.js";
+import userAuthMiddleware from "../middlewares/userAuthMiddleware.js";
 import MessageController from "./message.controller.js";
 
 const router = express.Router();
@@ -14,38 +13,38 @@ const parseFilesMiddleware = (fields) => (req, _res, next) => {
 
     next();
   } catch (error) {
-    next(new apiError(404, "Invalid JSON data", error));
+    next(new Error("Invalid JSON data"));
   }
 };
 
 // New message
-router.post("/new_message", verifyJWT, MessageController.new_message);
+router.post("/new_message", userAuthMiddleware, MessageController.new_message);
 
 // Update message by ID
 router.patch(
   "/update_message_by_Id/:messageId",
-  verifyJWT,
+  userAuthMiddleware,
   MessageController.updateMessageById
 );
 
 // Delete message
 router.delete(
   "/delete_message/:messageId",
-  verifyJWT,
+  userAuthMiddleware,
   MessageController.deleteMessageById
 );
 
 // Find messages by specific conversation
 router.get(
   "/find_by_specific_conversation/:conversationId",
-  verifyJWT,
+  userAuthMiddleware,
   MessageController.findBySpecificConversation
 );
 
 // Single new message
 router.post(
   "/single_new_message",
-  verifyJWT,
+  userAuthMiddleware,
   MessageController.single_new_message
 );
 

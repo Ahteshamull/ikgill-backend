@@ -14,10 +14,10 @@ const getConversation = async (profileId, query) => {
   const filter = { participants: profileObjectId };
 
   // If searchTerm is provided, restrict to conversations where the other
-  // participant's id matches users/providers whose fullname matches the term.
+  // participant's id matches users/providers whose name matches the term.
   if (searchTerm) {
     const matchingUserRoles = await UserRole.find(
-      { fullname: { $regex: searchTerm, $options: "i" } },
+      { name: { $regex: searchTerm, $options: "i" } },
       "_id"
     );
     const matchingUserRoleIds = matchingUserRoles.map((u) => u._id);
@@ -50,7 +50,7 @@ const getConversation = async (profileId, query) => {
       // Try to load as UserRole
       let otherDoc = null;
       if (otherId) {
-        otherDoc = await UserRole.findById(otherId, "fullname avatar");
+        otherDoc = await UserRole.findById(otherId, "name ");
       }
 
       const unseenCount = await messages.countDocuments({
@@ -63,7 +63,7 @@ const getConversation = async (profileId, query) => {
         _id: conv._id,
         userData: {
           _id: otherDoc?._id,
-          name: otherDoc?.fullname,
+          name: otherDoc?.name,
           profileImage: otherDoc?.avatar,
         },
         unseenMsg: unseenCount,
@@ -92,7 +92,7 @@ const allConversationIntoDb = async (eventId, query = {}) => {
     let q = conversations
       .find({ eventId })
       .populate([
-        { path: "participants", select: "fullname avatar" },
+        { path: "participants", select: "name" },
         { path: "lastMessage", select: "text createdAt msgByUserRoleId seen" },
       ])
       .sort({ updatedAt: -1 });
@@ -103,7 +103,9 @@ const allConversationIntoDb = async (eventId, query = {}) => {
     const meta = await conversations.countDocuments({ eventId });
 
     return { meta, allConversations };
-  } catch (error) {}
+  } catch (error) {
+    throw new Error("Error getting all conversations");
+  }
 };
 
 /**
@@ -118,7 +120,7 @@ const getSingleConversationListIntoDb = async (currentUserRoleId, query) => {
     let q = conversations
       .find({ participants: currentUserRoleId })
       .populate([
-        { path: "participants", select: "fullname avatar" },
+        { path: "participants", select: "name image" },
         { path: "lastMessage", select: "text createdAt msgByUserRoleId seen" },
       ])
       .sort({ updatedAt: -1 });
@@ -135,12 +137,12 @@ const getSingleConversationListIntoDb = async (currentUserRoleId, query) => {
         const participantsResolved = await Promise.all(
           (conv.participants || []).map(async (pid) => {
             try {
-              const userDoc = await UserRole.findById(pid, "fullname avatar");
+              const userDoc = await UserRole.findById(pid, "name image");
               if (userDoc) {
                 return {
                   _id: userDoc._id,
-                  fullname: userDoc.fullname,
-                  avatar: userDoc.avatar,
+                  name: userDoc.name,
+                  image: userDoc.image,
                 };
               }
             } catch (err) {
@@ -158,7 +160,9 @@ const getSingleConversationListIntoDb = async (currentUserRoleId, query) => {
     );
 
     return { meta, allConversations: allConversationsResolved };
-  } catch (error) {}
+  } catch (error) {
+    throw new Error("Error getting single conversation list");
+  }
 };
 
 /**
@@ -175,9 +179,9 @@ const getGroupConversationListIntoDb = async (
     const skip = (page - 1) * limit;
 
     let q = conversations
-      .find({ eventId })
+      .find({ _id: eventId })
       .populate([
-        { path: "participants", select: "name photo email" },
+        { path: "participants", select: "name image email" },
         { path: "lastMessage", select: "text createdAt" },
       ])
       .sort({ updatedAt: -1 });
@@ -185,10 +189,12 @@ const getGroupConversationListIntoDb = async (
     q = q.skip(skip).limit(limit);
 
     const allConversations = await q.exec();
-    const meta = await conversations.countDocuments({ eventId });
+    const meta = await conversations.countDocuments({ _id: eventId });
 
     return { meta, allConversations };
-  } catch (error) {}
+  } catch (error) {
+    throw new Error("Error getting group conversation list");
+  }
 };
 
 const ConversationService = {

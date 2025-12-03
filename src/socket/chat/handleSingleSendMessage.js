@@ -1,4 +1,4 @@
-import MessageService from "../../messages/message.service.js";
+import MessageService from "./../../messages/message.service.js";
 
 export const handleSingleSendMessage = async (
   io,

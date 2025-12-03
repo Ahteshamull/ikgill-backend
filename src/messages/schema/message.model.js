@@ -21,6 +21,7 @@ const messageSchema = new Schema(
     },
     msgByUserId: {
       type: Schema.Types.ObjectId,
+      ref: "UserRole",
       required: true,
       // Sender can be User or Provider; we'll resolve at the service layer.
     },

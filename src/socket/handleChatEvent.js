@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
-import ConversationService from "../conversation/conversation.service.js";
-import conversations from "../conversation/schema/conversation.model.js";
-import MessageService from "../messages/message.service.js";
 
+import conversations from "../models/message/message.js";
+import ConversationService from "../conversation/messageService.js";
 import { handleSingleSendMessage } from "./chat/handleSingleSendMessage.js";
 const handleChatEvents = async (io, socket, currentUserId) => {
   // Join conversation
@@ -15,7 +14,7 @@ const handleChatEvents = async (io, socket, currentUserId) => {
     });
 
     if (!isExistConversation) {
-      throw new (404, "Conversation not found");
+      throw new Error("Conversation not found");
     }
 
     const updatedConversation = await conversations.findByIdAndUpdate(
@@ -25,7 +24,7 @@ const handleChatEvents = async (io, socket, currentUserId) => {
     );
 
     if (!updatedConversation) {
-      throw new (500, "Failed to add participant");
+      throw new Error("Failed to add participant");
     }
 
     console.log("✅ Successfully added new participant:", currentUserId);
