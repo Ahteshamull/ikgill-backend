@@ -1,9 +1,9 @@
 import "dotenv/config";
 import { Server as SocketIO } from "socket.io";
-import conversations from "../conversation/schema/conversation.model.js";
-import { Provider } from "../users/schema/provider.model.js";
-import { User } from "../users/schema/user.model.js";
+
 import handleChatEvents from "./handleChatEvent.js";
+import userRoleModal from "../models/users/userRoleModal.js";
+import conversations from "./../models/message/message";
 
 let io;
 const onlineUsers = new Map();
@@ -39,9 +39,7 @@ const connectSocket = (server) => {
       return;
     }
 
-    const currentUser =
-      (await User.findById(userId).select("_id")) ||
-      (await Provider.findById(userId).select("_id"));
+    const currentUser = await userRoleModal.findById(userId).select("_id");
 
     if (!currentUser) {
       socket.emit("error", "User not found");
