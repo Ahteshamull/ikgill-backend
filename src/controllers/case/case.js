@@ -1271,3 +1271,81 @@ export const caseDownload = async (req, res) => {
     });
   }
 };
+
+export const getPersonalCase = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      selectedTier,
+      patientID,
+      caseNumber,
+      caseType,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+    } = req.query;
+
+    // Build filter object for dentist's personal cases
+    const filter = {
+      createdBy: req.user._id, // Only show cases created by this dentist
+    };
+
+    // Add optional filters
+    if (status) filter.status = status;
+    if (selectedTier) filter.selectedTier = selectedTier;
+    if (patientID) filter.patientID = new RegExp(patientID, "i");
+    if (caseNumber) filter.caseNumber = new RegExp(caseNumber, "i");
+    if (caseType) filter.caseType = caseType;
+
+    // Ensure dentist can only see cases from their own clinic
+    if (req.user.clinic) {
+      filter.clinicId = req.user.clinic;
+    } else {
+      // If dentist has no clinic assigned, return empty results
+      return res.status(200).json({
+        success: true,
+        data: [],
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: 0,
+          totalItems: 0,
+          itemsPerPage: parseInt(limit),
+        },
+      });
+    }
+
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+    const sortOptions = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
+
+    // Execute query
+    const cases = await Case.find(filter)
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate("clinicId", "name email phone address")
+      .populate("assignedTo", "name email role")
+      .populate("assignedTechnician", "name email role");
+
+    // Get total count
+    const total = await Case.countDocuments(filter);
+
+    res.status(200).json({
+      success: true,
+      data: cases,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        itemsPerPage: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching personal cases:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};

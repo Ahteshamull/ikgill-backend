@@ -18,6 +18,7 @@ import {
   caseDownload,
   getInProgressCases,
   getCompletedCases,
+  getPersonalCase,
 } from "../../controllers/case/case.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
 import { USER_ROLES, roleBasedAuth } from "../../middlewares/roleBasedAuth.js";
@@ -52,7 +53,11 @@ router.patch("/update-case/:id", updateCase); // Update case by ID
 router.put("/remake-case/:id", upload.any(), remakeCase); // Remake case by ID
 
 // localhost:3000/api/v1/case/delete-case/:id
-router.delete("/delete-case/:id", deleteCase); // Delete case by ID
+router.delete(
+  "/delete-case/:id",
+  roleBasedAuth([USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN]),
+  deleteCase
+); // Delete case by ID
 
 // Case-specific operations
 // localhost:3000/api/v1/case/update-case-status/:id
@@ -97,5 +102,11 @@ router.get("/inprogress-cases", getInProgressCases); // Get in-progress cases
 
 // localhost:3000/api/v1/case/completed-cases
 router.get("/completed-cases", getCompletedCases);
+
+router.get(
+  "/personal-case",
+  roleBasedAuth([USER_ROLES.DENTIST]),
+  getPersonalCase
+);
 
 export default router;

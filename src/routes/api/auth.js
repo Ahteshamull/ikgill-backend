@@ -20,7 +20,12 @@ import superAdminMiddleware from "../../middlewares/superAdminMiddleware.js";
 
 const router = express.Router();
 //localhost:3000/api/v1/auth/registration
-router.post("/signup", upload.single("image"), superAdminMiddleware, adminSignup);
+router.post(
+  "/signup",
+  upload.single("image"),
+  superAdminMiddleware,
+  adminSignup
+);
 router.post("/login", adminLogin);
 router.post("/logout", adminLogout);
 router.post("/forgot-password", forgotPassword);
