@@ -636,17 +636,40 @@ export const testEmailConfig = async (req, res) => {
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword, confirmPassword } = req.body || {};
-    const user = await userModel.findById(req.user?._id);
+
+    // Check if user is authenticated
+    if (!req.user || !req.user._id) {
+      return res
+        .status(401)
+        .json({ error: true, message: "User not authenticated" });
+    }
+
+    const user = await userModel.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ error: true, message: "User not found" });
     }
-    // const isSameAsOld = await bcrypt.compare(currentPassword, user.password);
-    // if (isSameAsOld) {
-    //   return res.status(400).json({
-    //     error: true,
-    //     message: "New password cannot be the same as the old password.",
-    //   });
-    // }
+
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({
+        error: true,
+        message: "Current password is incorrect",
+      });
+    }
+
+    // Check if new password is same as current
+    const isSameAsOld = await bcrypt.compare(newPassword, user.password);
+    if (isSameAsOld) {
+      return res.status(400).json({
+        error: true,
+        message: "New password cannot be the same as the old password.",
+      });
+    }
+
     // Validate new passwords
     if (newPassword !== confirmPassword) {
       return res.status(400).json({
@@ -654,8 +677,10 @@ export const changePassword = async (req, res) => {
         message: "New password and confirmation do not match.",
       });
     }
+
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save({ validateBeforeSave: false });
+
     return res.status(200).json({
       success: true,
       message: "Password changed successfully.",

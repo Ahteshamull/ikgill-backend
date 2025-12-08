@@ -35,7 +35,7 @@ router.post("/refresh-token", refreshAccessToken);
 router.post("/otp-verify", OtpVerify);
 router.post("/resend-otp", ResendOtp);
 router.get("/test-email", testEmailConfig);
-router.patch("/change-password", changePassword);
+router.patch("/change-password", userAuthMiddleware, changePassword);
 router.delete("/delete-admin/:id", superAdminMiddleware, deleteAdmin);
 router.patch(
   "/update-admin-personal-info",
