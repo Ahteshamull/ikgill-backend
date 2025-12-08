@@ -8,11 +8,10 @@ export const createTrams = async (req, res) => {
     if (!description) {
       return res.status(400).json({ error: "Description is required" });
     }
-    const trams = await Trams.findOneAndUpdate({
-      description,
-      image: images,
-    },
-    { new: true, upsert: true }
+    const trams = await Trams.findOneAndUpdate(
+      {}, // Find any existing document (empty query)
+      { description, image: images }, // Update data
+      { new: true, upsert: true }
     );
     res.status(201).json({
       message: "Trams Posted successfully",
@@ -25,12 +24,10 @@ export const createTrams = async (req, res) => {
 };
 
 export const getTrams = async (req, res) => {
-    try {
+  try {
     const trams = await Trams.findOne();
     res.status(200).json(trams);
   } catch (error) {
     res.status(500).json({ error: "Failed to get trams" });
   }
 };
-
-
