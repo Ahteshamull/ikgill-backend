@@ -1035,8 +1035,8 @@ export const assignToTechnician = async (req, res) => {
       "labManagerAssignment.assignedBy": labManagerId,
       "labManagerAssignment.assignedAt": new Date(),
       status: "In Progress",
-      isInProgress: false,
-      isCompleted: true,
+      isInProgress: true,
+      isCompleted: false,
       isArchived: false,
     };
 
@@ -1466,6 +1466,89 @@ export const getCaseByLab = async (req, res) => {
   } catch (error) {
     console.error("Error fetching cases by lab:", error);
     res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+export const caseUpdateByTechnician = async (req, res) => {
+  try {
+    const { caseId } = req.params;
+    const { labNotes, status } = req.body;
+
+    if (!caseId) {
+      return res.status(400).json({
+        success: false,
+        error: "Case ID is required",
+      });
+    }
+
+    // Find the case
+    const caseData = await Case.findById(caseId);
+    if (!caseData) {
+      return res.status(404).json({
+        success: false,
+        error: "Case not found",
+      });
+    }
+
+    // Check if the case is assigned to the current technician
+    if (
+      !caseData.assignedTechnician ||
+      caseData.assignedTechnician.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        error: "Access denied",
+        message: "You can only update cases assigned to you",
+      });
+    }
+
+    // Handle quality check images
+    let qualityCheckImages = [];
+    if (req.files && req.files.length > 0) {
+      qualityCheckImages = req.files.map((file) => ({
+        fileUrl: `${process.env.IMAGE_URL}${file.filename}`,
+        fileName: file.originalname,
+        uploadedAt: new Date(),
+      }));
+    }
+
+    // Build update data based on status
+    const updateData = {
+      "labPart.labNotes": labNotes || caseData.labPart?.labNotes || "",
+      "labPart.qualityCheckImages":
+        qualityCheckImages.length > 0
+          ? [
+              ...(caseData.labPart?.qualityCheckImages || []),
+              ...qualityCheckImages,
+            ]
+          : caseData.labPart?.qualityCheckImages || [],
+      status: "Complete",
+      isInProgress: false,
+      isCompleted: true,
+      completedAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    // Update the case
+    const updatedCase = await Case.findByIdAndUpdate(caseId, updateData, {
+      new: true,
+    })
+      .populate("clinicId", "name email")
+      .populate("labId", "name email")
+      .populate("assignedTechnician", "name email")
+      .populate("createdBy", "name email");
+
+    return res.status(200).json({
+      success: true,
+      message: "Case completed successfully by technician",
+      data: updatedCase,
+    });
+  } catch (error) {
+    console.error("Error updating case by technician:", error);
+    return res.status(500).json({
       success: false,
       error: error.message,
     });

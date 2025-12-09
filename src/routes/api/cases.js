@@ -20,6 +20,7 @@ import {
   getCompletedCases,
   getPersonalCase,
   getCaseByLab,
+  caseUpdateByTechnician,
 } from "../../controllers/case/case.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
 import { USER_ROLES, roleBasedAuth } from "../../middlewares/roleBasedAuth.js";
@@ -112,5 +113,13 @@ router.get(
 
 // localhost:3000/api/v1/case/lab/:labId
 router.get("/lab/:labId", getCaseByLab);
+
+// localhost:3000/api/v1/case/technician-update/:caseId
+router.patch(
+  "/technician-update/:caseId",
+  roleBasedAuth([USER_ROLES.LAB_TECHNICIAN]),
+  upload.array("qualityCheckImages", 5),
+  caseUpdateByTechnician
+);
 
 export default router;

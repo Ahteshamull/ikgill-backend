@@ -578,6 +578,17 @@ const CaseSchema = new mongoose.Schema(
     isArchived: { type: Boolean, default: false },
 
     product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+    labPart: {
+      labNotes: { type: String, trim: true },
+      qualityCheckImages: [
+        {
+          fileUrl: { type: String, required: true },
+          fileName: { type: String, required: true },
+          uploadedAt: { type: Date, default: Date.now },
+        },
+      ],
+    },
+
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     createdByUserRole: {
       type: mongoose.Schema.Types.ObjectId,
