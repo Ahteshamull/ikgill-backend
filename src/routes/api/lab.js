@@ -6,6 +6,7 @@ import {
   getLab,
   singleLabById,
   updateLab,
+  getActiveLabs,
 } from "../../controllers/lab/lab.js";
 
 const router = express.Router();
@@ -13,6 +14,8 @@ const router = express.Router();
 router.post("/create-lab", createLab);
 
 router.get("/get-lab", getLab);
+
+router.get("/active-labs", getActiveLabs);
 
 router.put("/update-lab/:id", updateLab);
 

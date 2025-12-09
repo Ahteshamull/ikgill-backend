@@ -520,9 +520,9 @@ const CaseSchema = new mongoose.Schema(
           description: String,
         },
         reEtch: {
-          type: String, enum: ["Crown", "Bridge"] 
-        }
-        ,
+          type: String,
+          enum: ["Crown", "Bridge"],
+        },
         specialInstructions: String,
         attachments: [AttachmentSchema],
       },
@@ -537,6 +537,7 @@ const CaseSchema = new mongoose.Schema(
     globalAttachments: [AttachmentSchema],
 
     clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic" },
+    labId: { type: mongoose.Schema.Types.ObjectId, ref: "Lab" },
     status: {
       type: String,
       enum: ["Pending", "In Progress", "Completed", "Archived", "Rejected"],

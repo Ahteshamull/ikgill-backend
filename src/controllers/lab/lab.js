@@ -5,7 +5,9 @@ export const createLab = async (req, res) => {
     const { name, email, details } = req.body;
     // Prevent duplicate emails (normalize to lowercase + trim)
     if (email) {
-      const exists = await labModel.exists({ email: email.trim().toLowerCase() });
+      const exists = await labModel.exists({
+        email: email.trim().toLowerCase(),
+      });
       if (exists) {
         return res.status(400).json({
           success: false,
@@ -51,30 +53,31 @@ export const getLab = async (req, res) => {
       filter.email = { $regex: email, $options: "i" };
     }
     const totalLabs = await labModel.countDocuments(filter);
-    const lab = await labModel.find(filter)
+    const lab = await labModel
+      .find(filter)
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
 
-        const totalPages = Math.ceil(totalLabs / limit);
+    const totalPages = Math.ceil(totalLabs / limit);
 
-        return res.status(200).json({
-            success: true,
-            message: "Lab fetched successfully",
-            data: lab,
-            pagination: {
-                currentPage: page,
-                totalPages,
-                limit,
-            },
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Lab fetching failed",
-            error: error.message,
-        });
-    }
+    return res.status(200).json({
+      success: true,
+      message: "Lab fetched successfully",
+      data: lab,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        limit,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Lab fetching failed",
+      error: error.message,
+    });
+  }
 };
 export const updateLab = async (req, res) => {
   try {
@@ -123,57 +126,76 @@ export const updateLab = async (req, res) => {
   }
 };
 export const deleteLab = async (req, res) => {
-    try {
-        const lab = await labModel.findByIdAndDelete(req.params.id);
-        return res.status(200).json({
-            success: true,
-            message: "Lab deleted successfully",
-            data: lab,
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Lab deleting failed",
-            error: error.message,
-        });
-    }
+  try {
+    const lab = await labModel.findByIdAndDelete(req.params.id);
+    return res.status(200).json({
+      success: true,
+      message: "Lab deleted successfully",
+      data: lab,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Lab deleting failed",
+      error: error.message,
+    });
+  }
 };
 export const singleLabById = async (req, res) => {
-    try {
-        const lab = await labModel.findById(req.params.id);
-        return res.status(200).json({
-            success: true,
-            message: "Lab fetched successfully",
-            data: lab,
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Lab fetching failed",
-            error: error.message,
-        });
-    }
+  try {
+    const lab = await labModel.findById(req.params.id);
+    return res.status(200).json({
+      success: true,
+      message: "Lab fetched successfully",
+      data: lab,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Lab fetching failed",
+      error: error.message,
+    });
+  }
 };
 export const changeLabStatus = async (req, res) => {
-    try {
-        const lab = await labModel.findByIdAndUpdate(
-            req.params.id,
-         {
-            labStatus: req.body.labStatus,
-         },
-         { new: true }
-        );
-        return res.status(200).json({
-            success: true,
-            message: "Lab status changed successfully",
-            
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Lab status changing failed",
-            error: error.message,
-        });
-    }
+  try {
+    const lab = await labModel.findByIdAndUpdate(
+      req.params.id,
+      {
+        labStatus: req.body.labStatus,
+      },
+      { new: true }
+    );
+    return res.status(200).json({
+      success: true,
+      message: "Lab status changed successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Lab status changing failed",
+      error: error.message,
+    });
+  }
+};
 
+export const getActiveLabs = async (req, res) => {
+  try {
+    const labs = await labModel
+      .find({ labStatus: "active" })
+      .select("_id name email details")
+      .sort({ name: 1 });
+
+    return res.status(200).json({
+      success: true,
+      message: "Active labs fetched successfully",
+      data: labs,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch active labs",
+      error: error.message,
+    });
+  }
 };

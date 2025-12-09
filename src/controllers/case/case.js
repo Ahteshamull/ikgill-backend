@@ -1,4 +1,5 @@
 import Case from "../../models/case/caseModal.js";
+import Lab from "../../models/lab/lab.js";
 import mongoose from "mongoose";
 import Notification from "../../models/notification/notification.js";
 import Clinic from "../../models/clinic/clinic.js";
@@ -115,10 +116,39 @@ export const createCase = async (req, res) => {
         length: req.body.assignedTo.length,
       });
     }
+    if (req.body.labId && !mongoose.Types.ObjectId.isValid(req.body.labId)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid labId format",
+        message: "labId must be a valid 24-character MongoDB ObjectId",
+        received: req.body.labId,
+        length: req.body.labId.length,
+      });
+    }
 
     // Remove empty ObjectId fields
     if (!req.body.clinicId) delete req.body.clinicId;
     if (!req.body.assignedTo) delete req.body.assignedTo;
+    if (!req.body.labId) delete req.body.labId;
+
+    // Validate lab exists and is active if labId is provided
+    if (req.body.labId) {
+      const lab = await Lab.findById(req.body.labId);
+      if (!lab) {
+        return res.status(400).json({
+          success: false,
+          error: "Lab not found",
+          message: "The specified lab does not exist",
+        });
+      }
+      if (lab.labStatus !== "active") {
+        return res.status(400).json({
+          success: false,
+          error: "Lab not active",
+          message: "The specified lab is not currently active",
+        });
+      }
+    }
 
     // Parse JSON string fields back to objects
     const parsedBody = { ...req.body };
@@ -313,8 +343,29 @@ export const getAllCases = async (req, res) => {
         // For dentist - only show cases created by themselves
         if (req.user.role === "dentist") {
           filter.createdBy = req.user._id;
+        } else if (req.user.role === "practicemanager") {
+          // For practice manager - show cases assigned to them and their own created cases
+          if (req.user.clinic) {
+            filter.clinicId = req.user.clinic;
+            filter.$or = [
+              { createdBy: req.user._id },
+              { assignedTo: req.user._id },
+            ];
+          } else {
+            // If user has no clinic assigned, return empty results
+            return res.status(200).json({
+              success: true,
+              data: [],
+              pagination: {
+                currentPage: parseInt(page),
+                totalPages: 0,
+                totalItems: 0,
+                itemsPerPage: parseInt(limit),
+              },
+            });
+          }
         } else {
-          // For practice manager, practice nurse - filter by their clinic
+          // For practice nurse - filter by their clinic
           if (req.user.clinic) {
             filter.clinicId = req.user.clinic;
           } else {
@@ -361,6 +412,7 @@ export const getAllCases = async (req, res) => {
       .skip(skip)
       .limit(parseInt(limit))
       .populate("clinicId", "name email")
+      .populate("labId", "name email")
       .populate("assignedTo", "name email")
       .populate("createdBy", "name email");
 
@@ -393,6 +445,7 @@ export const getCaseById = async (req, res) => {
 
     const caseData = await Case.findById(id)
       .populate("clinicId", "name email phone address")
+      .populate("labId", "name email")
       .populate("assignedTo", "name email role")
       .populate("createdBy", "name email");
 
