@@ -7,7 +7,7 @@ import { generateAccessAndRefreshToken } from "../auth/auth.js";
 
 export const createUser = async (req, res) => {
   try {
-    console.log("Request body:", req.body);
+    
     const {
       name,
       email,
@@ -28,6 +28,26 @@ export const createUser = async (req, res) => {
     let userLab = lab;
     if (["labmanager", "labtechnician"].includes(role) && !lab) {
       userLab = null;
+    }
+
+    // Check if lab already has a manager (only for lab manager role)
+    if (role === "labmanager" && userLab) {
+      const existingLab = await labModel.findById(userLab);
+      if (existingLab && existingLab.users.length > 0) {
+        // Check if any existing user in this lab is a lab manager
+        const existingManager = await userRoleModel.findOne({
+          lab: userLab,
+          role: "labmanager",
+        });
+
+        if (existingManager) {
+          return res.status(400).json({
+            success: false,
+            message: "This lab already has a lab manager assigned",
+            field: "lab",
+          });
+        }
+      }
     }
 
     // For clinic roles, if no clinic is provided, we'll skip clinic assignment for now
@@ -67,6 +87,7 @@ export const createUser = async (req, res) => {
         { new: true }
       );
     }
+    // Only add to lab users array if they have a lab assigned
     if (userLab) {
       await labModel.findByIdAndUpdate(
         userLab,

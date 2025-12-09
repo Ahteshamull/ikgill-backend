@@ -3,19 +3,6 @@ import labModel from "../../models/lab/lab.js";
 export const createLab = async (req, res) => {
   try {
     const { name, email, details } = req.body;
-    // Prevent duplicate emails (normalize to lowercase + trim)
-    if (email) {
-      const exists = await labModel.exists({
-        email: email.trim().toLowerCase(),
-      });
-      if (exists) {
-        return res.status(400).json({
-          success: false,
-          message: "Lab email already exists",
-          field: "email",
-        });
-      }
-    }
     const lab = await labModel.create({
       name,
       email: email?.trim().toLowerCase(),
