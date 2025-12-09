@@ -114,7 +114,7 @@ export const getAllUser = async (req, res) => {
         currentPage: page,
         totalPages,
         limit,
-        totalUsers
+        totalUsers,
       },
     });
   } catch (error) {

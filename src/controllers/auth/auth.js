@@ -202,13 +202,6 @@ export const updateAdminPersonalInfo = async (req, res) => {
     (item) => `${process.env.IMAGE_URL}${item.filename}`
   );
 
-  if (!name || !phone) {
-    return res.status(400).json({
-      error: true,
-      message: "Name and phone are required",
-    });
-  }
-
   try {
     // 🔒 strict auth check
     if (!req.user || !req.user._id) {
