@@ -19,6 +19,7 @@ import {
   getInProgressCases,
   getCompletedCases,
   getPersonalCase,
+  getCaseByLab,
 } from "../../controllers/case/case.js";
 import { upload } from "../../middlewares/imageControlMiddleware.js";
 import { USER_ROLES, roleBasedAuth } from "../../middlewares/roleBasedAuth.js";
@@ -108,5 +109,8 @@ router.get(
   roleBasedAuth([USER_ROLES.DENTIST]),
   getPersonalCase
 );
+
+// localhost:3000/api/v1/case/lab/:labId
+router.get("/lab/:labId", getCaseByLab);
 
 export default router;

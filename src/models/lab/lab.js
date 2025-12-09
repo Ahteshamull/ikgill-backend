@@ -30,6 +30,12 @@ const labSchema = new Schema(
         ref: "UserRole",
       },
     ],
+    cases: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Case",
+      },
+    ],
   },
   {
     timestamps: true,

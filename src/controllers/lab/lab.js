@@ -44,6 +44,12 @@ export const getLab = async (req, res) => {
       .find(filter)
       .skip(skip)
       .limit(limit)
+      .populate({
+        path: "users",
+        match: { role: "labtechnician" },
+        select: "name email role",
+      })
+      .populate("cases", "caseNumber status createdAt")
       .sort({ createdAt: -1 });
 
     const totalPages = Math.ceil(totalLabs / limit);

@@ -254,6 +254,20 @@ export const createCase = async (req, res) => {
       }
     }
 
+    // Add case to lab's cases array if labId is present
+    if (caseData.labId) {
+      try {
+        await Lab.findByIdAndUpdate(
+          caseData.labId,
+          { $push: { cases: caseData._id } },
+          { new: true }
+        );
+      } catch (labUpdateErr) {
+        console.error("Error adding case to lab:", labUpdateErr);
+        // Don't fail the request if lab update fails, but log it
+      }
+    }
+
     // Notification
     try {
       const notif = await Notification.create({
@@ -1087,7 +1101,6 @@ export const getPendingCasesForAdmin = async (req, res) => {
   }
 };
 
-// Get Accepted Cases for Lab Manager
 export const getAcceptedCasesForLabManager = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -1396,6 +1409,62 @@ export const getPersonalCase = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching personal cases:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+export const getCaseByLab = async (req, res) => {
+  try {
+    const { labId } = req.params;
+    const { page = 1, limit = 10 } = req.query;
+
+    if (!labId) {
+      return res.status(400).json({
+        success: false,
+        error: "Lab ID is required",
+      });
+    }
+
+    // Validate lab exists
+    const lab = await Lab.findById(labId);
+    if (!lab) {
+      return res.status(404).json({
+        success: false,
+        error: "Lab not found",
+      });
+    }
+
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+
+    // Find cases for the specific lab
+    const cases = await Case.find({ labId })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate("clinicId", "name email")
+      .populate("labId", "name email")
+      .populate("assignedTo", "name email")
+      .populate("createdBy", "name email");
+
+    // Get total count
+    const total = await Case.countDocuments({ labId });
+
+    res.status(200).json({
+      success: true,
+      data: cases,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        itemsPerPage: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching cases by lab:", error);
     res.status(500).json({
       success: false,
       error: error.message,
