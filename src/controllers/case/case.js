@@ -934,7 +934,7 @@ export const remakeCase = async (req, res) => {
 export const adminApproveCase = async (req, res) => {
   try {
     const { id } = req.params;
-    const { action, rejectionReason, adminId } = req.body;
+    const { action, rejectionReason } = req.body;
 
     if (!["accept", "reject"].includes(action)) {
       return res.status(400).json({
@@ -952,7 +952,7 @@ export const adminApproveCase = async (req, res) => {
 
     const updateData = {
       "adminApproval.status": action === "accept" ? "Accepted" : "Rejected",
-      "adminApproval.approvedBy": adminId,
+      "adminApproval.approvedBy": req.user._id,
       "adminApproval.approvedAt": new Date(),
       status: action === "accept" ? "In Progress" : "Rejected",
     };

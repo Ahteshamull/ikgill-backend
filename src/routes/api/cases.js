@@ -82,7 +82,11 @@ router.get(
 
 // Workflow Management Routes
 // localhost:3000/api/v1/case/admin-approve/:id
-router.patch("/admin-approve/:id", adminApproveCase); // Admin accept/reject case
+router.patch(
+  "/admin-approve/:id",
+  roleBasedAuth([USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN]),
+  adminApproveCase
+); // Admin accept/reject case
 
 // localhost:3000/api/v1/case/assign-to-technician/:id
 router.patch("/assign-to-technician/:id", assignToTechnician); // Lab manager assigns to technician
