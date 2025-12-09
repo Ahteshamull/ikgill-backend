@@ -1,7 +1,6 @@
 import express from "express";
 import api from "./api/index.js";
 
-
 const router = express.Router();
 const baseurl = process.env.BASE_URL || "/api/v1";
 
