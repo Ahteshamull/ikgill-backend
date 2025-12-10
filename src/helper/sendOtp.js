@@ -364,7 +364,7 @@ Security Notice:
             </div>
             <div class="content">
               <h2>Hello ${userName}!</h2>
-              <p>Your password has been successfully reset for your Flexitech account.</p>
+              <p>Your password has been successfully reset for your TDK Lab account.</p>
  
               <div class="success-box">
                 <h3>🎉 All Done!</h3>
