@@ -29,7 +29,6 @@ app.get("/", (req, res) => {
 });
 
 app.use(router);
-
 // DB connect
 dbConnect();
 
