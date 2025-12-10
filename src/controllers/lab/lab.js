@@ -28,6 +28,7 @@ export const createLab = async (req, res) => {
     });
   }
 };
+
 export const getLab = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -72,6 +73,7 @@ export const getLab = async (req, res) => {
     });
   }
 };
+
 export const updateLab = async (req, res) => {
   try {
     const { name, email, details } = req.body;
@@ -118,6 +120,7 @@ export const updateLab = async (req, res) => {
     });
   }
 };
+
 export const deleteLab = async (req, res) => {
   try {
     const lab = await labModel.findByIdAndDelete(req.params.id);
@@ -134,6 +137,7 @@ export const deleteLab = async (req, res) => {
     });
   }
 };
+
 export const singleLabById = async (req, res) => {
   try {
     const lab = await labModel.findById(req.params.id);
@@ -150,6 +154,7 @@ export const singleLabById = async (req, res) => {
     });
   }
 };
+
 export const changeLabStatus = async (req, res) => {
   try {
     const lab = await labModel.findByIdAndUpdate(
