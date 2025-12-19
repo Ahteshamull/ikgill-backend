@@ -535,6 +535,8 @@ const CaseSchema = new mongoose.Schema(
     },
 
     globalAttachments: [AttachmentSchema],
+    totalPrice: { type: Number, default: 0 },
+    
 
     clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic" },
     labId: { type: mongoose.Schema.Types.ObjectId, ref: "Lab" },

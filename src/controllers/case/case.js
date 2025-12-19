@@ -206,6 +206,11 @@ export const createCase = async (req, res) => {
       }
     }
 
+    // Handle totalPrice field
+    if (req.body.totalPrice !== undefined) {
+      caseDataToCreate.totalPrice = parseFloat(req.body.totalPrice) || 0;
+    }
+
     // Track which UserRole (e.g., dentist) created the case
     if (!caseDataToCreate.createdByUserRole) {
       caseDataToCreate.createdByUserRole =
