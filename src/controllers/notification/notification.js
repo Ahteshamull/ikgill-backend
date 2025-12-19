@@ -46,7 +46,7 @@ export const listNotifications = async (req, res) => {
 };
 
 // Mark a notification as read
-export const markNotificationRead = async (req, res) => {
+export const  markNotificationRead = async (req, res) => {
   try {
     const { id } = req.params;
     const updated = await Notification.findByIdAndUpdate(

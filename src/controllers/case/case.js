@@ -358,13 +358,9 @@ export const getAllCases = async (req, res) => {
         if (req.user.role === "dentist") {
           filter.createdBy = req.user._id;
         } else if (req.user.role === "practicemanager") {
-          // For practice manager - show cases assigned to them and their own created cases
+          // For practice manager - show all cases from their clinic
           if (req.user.clinic) {
             filter.clinicId = req.user.clinic;
-            filter.$or = [
-              { createdBy: req.user._id },
-              { assignedTo: req.user._id },
-            ];
           } else {
             // If user has no clinic assigned, return empty results
             return res.status(200).json({
