@@ -1,7 +1,6 @@
 import express from "express";
 import userAuthMiddleware from "../middlewares/userAuthMiddleware.js";
 import MessageController from "./message.controller.js";
-import { upload } from "../middlewares/imageControlMiddleware.js";
 
 const router = express.Router();
 
@@ -19,13 +18,7 @@ const parseFilesMiddleware = (fields) => (req, _res, next) => {
 };
 
 // New message
-router.post(
-  "/new_message",
-  userAuthMiddleware,
-  upload.array("images", 5),
-  parseFilesMiddleware(),
-  MessageController.new_message
-);
+router.post("/new_message", userAuthMiddleware, MessageController.new_message);
 
 // Update message by ID
 router.patch(
@@ -52,8 +45,6 @@ router.get(
 router.post(
   "/single_new_message",
   userAuthMiddleware,
-  upload.array("images", 5),
-  parseFilesMiddleware(),
   MessageController.single_new_message
 );
 
