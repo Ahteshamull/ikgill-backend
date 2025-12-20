@@ -2,6 +2,7 @@ import express from "express";
 import userAuthMiddleware from "../../middlewares/userAuthMiddleware.js";
 import ConversationController from "../../controllers/message/messageController.js";
 import MessageController from "../../messages/message.controller.js";
+import { upload } from "../../middlewares/imageControlMiddleware.js";
 
 const router = express.Router();
 
@@ -35,11 +36,27 @@ router.get(
   userAuthMiddleware,
   ConversationController.getGroupConversationList
 );
-
+// localhost:3000/api/v1/message/find_my_single_chat_list/:conversationId
 router.get(
   "/find_my_single_chat_list/:conversationId",
   userAuthMiddleware,
   MessageController.get_my_single_specific_chatList_controller
+);
+
+// localhost:3000/api/v1/message/new-message
+router.post(
+  "/new-message",
+  userAuthMiddleware,
+  upload.array("images", 5),
+  MessageController.new_message
+);
+
+// localhost:3000/api/v1/message/single-message
+router.post(
+  "/single-message",
+  userAuthMiddleware,
+  upload.array("images", 5),
+  MessageController.single_new_message
 );
 
 export default router;

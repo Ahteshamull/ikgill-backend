@@ -2,7 +2,11 @@ import MessageService from "./message.service.js";
 
 // Create a new message
 const new_message = async (req, res) => {
-  const result = await MessageService.new_message_IntoDb(req.user, req.body);
+  const result = await MessageService.new_message_IntoDb(
+    req.user,
+    req.body,
+    req.files
+  );
 
   res.json(new (201, result, "Successfully sent the message")());
 };
@@ -39,7 +43,8 @@ const findBySpecificConversation = async (req, res) => {
 const single_new_message = async (req, res) => {
   const result = await MessageService.single_new_message_IntoDb(
     req.user,
-    req.body
+    req.body,
+    req.files
   );
   res.status(200).json(new (200, result, "Successfully sent the message")());
 };

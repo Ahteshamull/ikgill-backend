@@ -7,7 +7,7 @@ import { onlineUsers, getSocketIO } from "../socket/socket.Connection.js";
 /**
  * Create a new message
  */
-const new_message_IntoDb = async (user, data) => {
+const new_message_IntoDb = async (user, data, files = null) => {
   if (!user?.id) {
     throw new Error("User ID not found in token");
   }
@@ -61,10 +61,18 @@ const new_message_IntoDb = async (user, data) => {
     }
   }
 
+  // Handle uploaded images
+  let imageUrls = data.imageUrl || [];
+  if (files && files.length > 0) {
+    imageUrls = files.map(
+      (file) => `${process.env.IMAGE_URL || ""}${file.filename}`
+    );
+  }
+
   // Save message
   const messageData = {
     text: data.text,
-    imageUrl: data.imageUrl || [],
+    imageUrl: imageUrls,
     audioUrl: data.audioUrl || "",
     msgByUserId: new mongoose.Types.ObjectId(user.id),
     conversationId: conversation._id,
@@ -232,7 +240,7 @@ const findBySpecificConversationInDb = async (conversationId, query) => {
 /**
  * Send a single 1-to-1 message
  */
-const single_new_message_IntoDb = async (user, data) => {
+const single_new_message_IntoDb = async (user, data, files = null) => {
   const senderId = user._id || user.id;
   console.log("SENDERID", senderId);
   if (!senderId) {
@@ -261,9 +269,17 @@ const single_new_message_IntoDb = async (user, data) => {
     isNewConversation = true;
   }
 
+  // Handle uploaded images
+  let imageUrls = data.imageUrl || [];
+  if (files && files.length > 0) {
+    imageUrls = files.map(
+      (file) => `${process.env.IMAGE_URL || ""}${file.filename}`
+    );
+  }
+
   const messageData = {
     text: data.text?.trim() || "",
-    imageUrl: data.imageUrl || [],
+    imageUrl: imageUrls,
     audioUrl: data.audioUrl || "",
     eventId: data.eventId || null,
     msgByUserId: senderId,
