@@ -7,7 +7,7 @@ import { onlineUsers, getSocketIO } from "../socket/socket.Connection.js";
 /**
  * Create a new message
  */
-const new_message_IntoDb = async (user, data) => {
+const new_message_IntoDb = async (user, data, files = null) => {
   if (!user?.id) {
     throw new Error("User ID not found in token");
   }
@@ -61,10 +61,16 @@ const new_message_IntoDb = async (user, data) => {
     }
   }
 
+  // Handle uploaded images using same pattern as user controller
+  const images =
+    files && files.length > 0
+      ? files.map((item) => `${process.env.IMAGE_URL}${item.filename}`)
+      : data.imageUrl || [];
+
   // Save message
   const messageData = {
     text: data.text,
-    imageUrl: data.imageUrl || [],
+    imageUrl: images,
     audioUrl: data.audioUrl || "",
     msgByUserId: new mongoose.Types.ObjectId(user.id),
     conversationId: conversation._id,
@@ -232,9 +238,8 @@ const findBySpecificConversationInDb = async (conversationId, query) => {
 /**
  * Send a single 1-to-1 message
  */
-const single_new_message_IntoDb = async (user, data) => {
+const single_new_message_IntoDb = async (user, data, files = null) => {
   const senderId = user._id || user.id;
-  console.log("SENDERID", senderId);
   if (!senderId) {
     throw new Error("Sender ID missing from token");
   }
@@ -261,9 +266,16 @@ const single_new_message_IntoDb = async (user, data) => {
     isNewConversation = true;
   }
 
+  // Handle uploaded images using same pattern as user controller
+  const images =
+    files && files.length > 0
+      ? files.map((item) => `${process.env.IMAGE_URL}${item.filename}`)
+      : data.imageUrl || [];
+  console.log(images, "image");
+
   const messageData = {
     text: data.text?.trim() || "",
-    imageUrl: data.imageUrl || [],
+    imageUrl: images,
     audioUrl: data.audioUrl || "",
     eventId: data.eventId || null,
     msgByUserId: senderId,
@@ -277,6 +289,11 @@ const single_new_message_IntoDb = async (user, data) => {
     { lastMessage: savedMessage._id, updatedAt: new Date() }
   );
 
+  // Get the full message with populated sender info
+  const fullMessage = await messages
+    .findById(savedMessage._id)
+    .populate("msgByUserId", "fullname avatar email");
+
   return {
     success: true,
     message: "Message sent successfully",
@@ -284,6 +301,7 @@ const single_new_message_IntoDb = async (user, data) => {
       isNewConversation,
       conversationId: conversation._id,
       messageId: savedMessage._id,
+      message: fullMessage,
     },
   };
 };
