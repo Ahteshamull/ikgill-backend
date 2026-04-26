@@ -322,7 +322,7 @@ const CaseSchema = new mongoose.Schema(
           },
         },
         fullCast: {
-          materialType: { type: String, enum: ["NP (silver coloured)"] },
+          materialType: { type: String, enum: ["non precious", "gold"] },
           singleUnitCrown: {
             enabled: { type: Boolean, default: false },
             teeth: [String],
@@ -536,7 +536,6 @@ const CaseSchema = new mongoose.Schema(
 
     globalAttachments: [AttachmentSchema],
     totalPrice: { type: Number, default: 0 },
-    
 
     clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic" },
     labId: { type: mongoose.Schema.Types.ObjectId, ref: "Lab" },
@@ -597,7 +596,7 @@ const CaseSchema = new mongoose.Schema(
       ref: "UserRole",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexes
