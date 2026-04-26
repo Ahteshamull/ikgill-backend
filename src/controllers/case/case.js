@@ -238,7 +238,11 @@ export const createCase = async (req, res) => {
       standard = pruneFields(standard);
     }
 
-    const clinicalDetails = extractClinicalDetails(caseDataToCreate);
+    const clinicalDetails = extractClinicalDetails({
+      selectedTier,
+      standard,
+      premium,
+    });
 
     const caseDataToCreateFinal = {
       selectedTier,
