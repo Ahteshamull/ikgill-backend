@@ -71,7 +71,6 @@ const extractClinicalDetails = (data) => {
   return details;
 };
 
-
 // Utility to prune empty or disabled fields
 const pruneFields = (obj) => {
   if (!obj) return null;
@@ -321,7 +320,7 @@ export const createCase = async (req, res) => {
         await Clinic.findByIdAndUpdate(
           caseData.clinicId,
           { $push: { case: caseData._id } },
-          { new: true }
+          { new: true },
         );
       } catch (clinicUpdateErr) {
         console.error("Error adding case to clinic:", clinicUpdateErr);
@@ -335,7 +334,7 @@ export const createCase = async (req, res) => {
         await Lab.findByIdAndUpdate(
           caseData.labId,
           { $push: { cases: caseData._id } },
-          { new: true }
+          { new: true },
         );
       } catch (labUpdateErr) {
         console.error("Error adding case to lab:", labUpdateErr);
@@ -616,7 +615,7 @@ export const updateCase = async (req, res) => {
     const updatedCase = await Case.findByIdAndUpdate(
       id,
       { $set: updateData },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     )
       .populate("clinicId", "name email")
       .populate("assignedTo", "name email");
@@ -694,7 +693,7 @@ export const updateCaseStatus = async (req, res) => {
     const updatedCase = await Case.findByIdAndUpdate(
       id,
       { status },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedCase) {
@@ -987,7 +986,7 @@ export const remakeCase = async (req, res) => {
     const remadeCase = await Case.findByIdAndUpdate(
       id,
       { $set: remakeData },
-      { new: true, runValidators: true, overwrite: false }
+      { new: true, runValidators: true, overwrite: false },
     )
       .populate("clinicId", "name email")
       .populate("assignedTo", "name email");
@@ -1359,7 +1358,7 @@ const archiveCompletedCasesAfterTwoWeeks = async () => {
       isCompleted: false,
       isArchived: true,
       archiveDate: new Date(),
-    }
+    },
   );
 };
 
