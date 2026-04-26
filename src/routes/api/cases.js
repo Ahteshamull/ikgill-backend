@@ -36,6 +36,7 @@ router.post(
 ); // Only dentists can create cases
 
 // localhost:3000/api/v1/case/all-case
+// localhost:5000/api/v1/case/all-case?selectedTier=Standard
 router.get("/all-case", roleBasedAuth(Object.values(USER_ROLES)), getAllCases); // Get all cases with filters
 
 // localhost:3000/api/v1/case/single-case/:id

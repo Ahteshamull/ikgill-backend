@@ -9,6 +9,69 @@ import PDFDocument from "pdfkit"; // recommended
 import { Readable } from "stream";
 // Note: Frontend will handle formatting/export (no server-side PDF)
 
+const CATEGORY_MAP = {
+  CrownBridge: "Crown/Bridge",
+  Dentures: "Dentures",
+  dentures: "Dentures",
+  implants: "Implants",
+  orthodontic: "Orthodontic",
+  Misc: "Misc",
+  misc: "Misc",
+};
+
+const extractClinicalDetails = (data) => {
+  const details = {
+    category: "",
+    subCategory: "",
+    restoration: "",
+    restorationType: "",
+  };
+
+  const tier = data.selectedTier === "Standard" ? data.standard : data.premium;
+  if (!tier) return details;
+
+  for (const catKey in tier) {
+    const categoryObj = tier[catKey];
+    if (typeof categoryObj !== "object" || categoryObj === null) continue;
+
+    for (const subKey in categoryObj) {
+      const subCategoryObj = categoryObj[subKey];
+      if (typeof subCategoryObj !== "object" || subCategoryObj === null)
+        continue;
+
+      // Extract restorationType (materialType) if available
+      if (subCategoryObj.materialType) {
+        details.restorationType = subCategoryObj.materialType;
+      }
+
+      for (const resKey in subCategoryObj) {
+        const restorationObj = subCategoryObj[resKey];
+        if (
+          typeof restorationObj === "object" &&
+          restorationObj?.enabled === true
+        ) {
+          details.category = CATEGORY_MAP[catKey] || catKey;
+          details.subCategory = subKey
+            .replace(/([A-Z])/g, " $1")
+            .replace(/^./, (str) => str.toUpperCase());
+          details.restoration = resKey
+            .replace(/([A-Z])/g, " $1")
+            .replace(/^./, (str) => str.toUpperCase());
+
+          // If restorationType wasn't found at subCategory level, check if it's nested
+          if (!details.restorationType && restorationObj.materialType) {
+            details.restorationType = restorationObj.materialType;
+          }
+
+          return details;
+        }
+      }
+    }
+  }
+  return details;
+};
+
+
 // Utility to prune empty or disabled fields
 const pruneFields = (obj) => {
   if (!obj) return null;
@@ -175,10 +238,13 @@ export const createCase = async (req, res) => {
       standard = pruneFields(standard);
     }
 
-    const caseDataToCreate = {
+    const clinicalDetails = extractClinicalDetails(caseDataToCreate);
+
+    const caseDataToCreateFinal = {
       selectedTier,
       standard,
       premium,
+      ...clinicalDetails,
       ...rest,
     };
 
@@ -186,64 +252,64 @@ export const createCase = async (req, res) => {
     if (images && images.length > 0) {
       const attachmentsPath = req.body.attachmentsPath; // e.g., "standard.CrownBridge.pfm.singleUnitCrown.attachments"
       if (attachmentsPath) {
-        setDeep(caseDataToCreate, attachmentsPath, images);
+        setDeep(caseDataToCreateFinal, attachmentsPath, images);
       } else {
-        caseDataToCreate.globalAttachments = images;
+        caseDataToCreateFinal.globalAttachments = images;
       }
     }
 
     // Enforce unique patientID at create-time
-    if (caseDataToCreate.patientID) {
+    if (caseDataToCreateFinal.patientID) {
       const exists = await Case.exists({
-        patientID: caseDataToCreate.patientID,
+        patientID: caseDataToCreateFinal.patientID,
       });
       if (exists) {
         return res.status(400).json({
           success: false,
           error: "Duplicate patientID",
-          message: `patientID '${caseDataToCreate.patientID}' already exists`,
+          message: `patientID '${caseDataToCreateFinal.patientID}' already exists`,
         });
       }
     }
 
     // Handle totalPrice field
     if (req.body.totalPrice !== undefined) {
-      caseDataToCreate.totalPrice = parseFloat(req.body.totalPrice) || 0;
+      caseDataToCreateFinal.totalPrice = parseFloat(req.body.totalPrice) || 0;
     }
 
     // Track which UserRole (e.g., dentist) created the case
-    if (!caseDataToCreate.createdByUserRole) {
-      caseDataToCreate.createdByUserRole =
+    if (!caseDataToCreateFinal.createdByUserRole) {
+      caseDataToCreateFinal.createdByUserRole =
         req.user?._id || parsedBody.createdByUserRole;
     }
 
     // Track which User created the case
-    if (!caseDataToCreate.createdBy) {
-      caseDataToCreate.createdBy = req.user?._id;
+    if (!caseDataToCreateFinal.createdBy) {
+      caseDataToCreateFinal.createdBy = req.user?._id;
     }
 
     // Automatically set clinicId for users who belong to a clinic (dentists, practice managers, etc.)
-    if (!caseDataToCreate.clinicId && req.user?.clinic) {
-      caseDataToCreate.clinicId = req.user.clinic;
+    if (!caseDataToCreateFinal.clinicId && req.user?.clinic) {
+      caseDataToCreateFinal.clinicId = req.user.clinic;
     }
 
     // Lifecycle: scanNumber -> Pending admin; otherwise In Progress (admin accepted)
     if (parsedBody.scanNumber && parsedBody.scanNumber.trim() !== "") {
-      caseDataToCreate.status = "Pending";
-      caseDataToCreate.adminApproval = { status: "Pending" };
-      caseDataToCreate.isInProgress = false;
-      caseDataToCreate.isCompleted = false;
+      caseDataToCreateFinal.status = "Pending";
+      caseDataToCreateFinal.adminApproval = { status: "Pending" };
+      caseDataToCreateFinal.isInProgress = false;
+      caseDataToCreateFinal.isCompleted = false;
     } else {
-      caseDataToCreate.status = "In Progress";
-      caseDataToCreate.adminApproval = {
+      caseDataToCreateFinal.status = "In Progress";
+      caseDataToCreateFinal.adminApproval = {
         status: "Accepted",
         approvedAt: new Date(),
       };
-      caseDataToCreate.isInProgress = true;
-      caseDataToCreate.isCompleted = false;
+      caseDataToCreateFinal.isInProgress = true;
+      caseDataToCreateFinal.isCompleted = false;
     }
 
-    const caseData = await Case.create(caseDataToCreate);
+    const caseData = await Case.create(caseDataToCreateFinal);
 
     // Add case to clinic's cases array if clinicId is present
     if (caseData.clinicId) {
@@ -337,6 +403,10 @@ export const getAllCases = async (req, res) => {
       caseNumber,
       clinicId,
       caseType,
+      category,
+      subCategory,
+      restoration,
+      restorationType,
       sortBy = "createdAt",
       sortOrder = "desc",
     } = req.query;
@@ -348,6 +418,10 @@ export const getAllCases = async (req, res) => {
     if (patientID) filter.patientID = new RegExp(patientID, "i");
     if (caseNumber) filter.caseNumber = new RegExp(caseNumber, "i");
     if (caseType) filter.caseType = caseType; // New | Continuation | Remake
+    if (category) filter.category = category;
+    if (subCategory) filter.subCategory = subCategory;
+    if (restoration) filter.restoration = restoration;
+    if (restorationType) filter.restorationType = restorationType;
 
     // Clinic-based filtering for authenticated users
     if (req.user) {
@@ -530,6 +604,10 @@ export const updateCase = async (req, res) => {
         }
       }
     });
+
+    // Extract clinical details for flattened fields
+    const clinicalDetails = extractClinicalDetails(updateData);
+    Object.assign(updateData, clinicalDetails);
 
     const updatedCase = await Case.findByIdAndUpdate(
       id,
@@ -886,6 +964,10 @@ export const remakeCase = async (req, res) => {
       ...parsedBody,
       caseType: "Remake", // Set case type as Remake
     };
+
+    // Extract clinical details for flattened fields
+    const clinicalDetails = extractClinicalDetails(remakeData);
+    Object.assign(remakeData, clinicalDetails);
 
     // Apply uploaded images to a targeted nested attachments array, if provided
     if (images && images.length > 0) {

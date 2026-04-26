@@ -14,7 +14,7 @@ dotenv.config();
 app.use(
   cors({
     origin: "*",
-  })
+  }),
 );
 
 // Middlewares
@@ -37,6 +37,5 @@ const PORT = process.env.PORT || 5000;
 
 server = app.listen(PORT, () => {
   console.log(`✅ Server running at ${PORT}`);
-  console.log(`🌐 Try: http://localhost:${PORT}/`);
 });
 connectSocket(server);

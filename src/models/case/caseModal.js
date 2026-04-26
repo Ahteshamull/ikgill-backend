@@ -29,6 +29,12 @@ const CaseSchema = new mongoose.Schema(
     },
     patientID: { type: String, trim: true, unique: true },
 
+    // Clinical Details (Flattened for easy filtering and display)
+    category: String,
+    subCategory: String,
+    restoration: String,
+    restorationType: String,
+
     // Tier Selection
     // ======================
     selectedTier: {
@@ -346,17 +352,23 @@ const CaseSchema = new mongoose.Schema(
             attachments: [AttachmentSchema],
           },
 
-          conventionalBridge: {
-            enabled: { type: Boolean, default: false },
-            ponticDesign: {
-              type: String,
-              enum: [
-                "Full ridge",
-                "Modify ridge lap",
-                "No contact",
-                "Point contact",
-                "Point in socket (ovate)",
-              ],
+          postAndCore: {
+            enabled: {
+              type: Boolean,
+              default: false,
+              validate: {
+                validator: function (v) {
+                  // If enabled is true, materialType must not be 'gold'
+                  if (
+                    v &&
+                    this.premium?.CrownBridge?.fullCast?.materialType === "gold"
+                  ) {
+                    return false;
+                  }
+                  return true;
+                },
+                message: "Post and Core is not available for gold material type.",
+              },
             },
             teeth: [String],
             specialInstructions: String,
