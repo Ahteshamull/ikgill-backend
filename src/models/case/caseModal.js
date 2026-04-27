@@ -379,9 +379,8 @@ const CaseSchema = new mongoose.Schema(
         metalFree: {
           emax: {
             enabled: {
-              type: Boolean,
-              default: false,
-              singleUnitCrown: {
+              type: Boolean, default: false, 
+            singleUnitCrown: {
                 teeth: [String],
                 shade2D: [String],
                 shade3D: [String],
@@ -395,67 +394,62 @@ const CaseSchema = new mongoose.Schema(
                 specialInstructions: String,
                 attachments: [AttachmentSchema],
               },
-            },
+            }
           },
           zirconia: {
-            enabled: {
-              type: Boolean,
-              default: false,
-              singleUnitCrown: {
-                teeth: [String],
-                shade2D: [String],
-                shade3D: [String],
-                specialInstructions: String,
-                attachments: [AttachmentSchema],
+            singleUnitCrown: {
+              teeth: [String],
+              shade2D: [String],
+              shade3D: [String],
+              specialInstructions: String,
+              attachments: [AttachmentSchema],
+            },
+            veneer: {
+              teeth: [String],
+              shade2D: [String],
+              shade3D: [String],
+              specialInstructions: String,
+              attachments: [AttachmentSchema],
+            },
+            marylandBridge: {
+              enabled: { type: Boolean, default: false },
+              ponticDesign: {
+                type: String,
+                enum: [
+                  "Full ridge",
+                  "Modify ridge lap",
+                  "No contact",
+                  "Point contact",
+                  "Point in socket (ovate)",
+                ],
               },
-              veneer: {
-                teeth: [String],
-                shade2D: [String],
-                shade3D: [String],
-                specialInstructions: String,
-                attachments: [AttachmentSchema],
+              teeth: [String],
+              ponticTeeth: [String],
+              wingTeeth: [String],
+              shade: [String],
+              specialInstructions: String,
+              attachments: [AttachmentSchema],
+            },
+            conventionalBridge: {
+              enabled: { type: Boolean, default: false },
+              ponticDesign: {
+                type: String,
+                enum: [
+                  "Full ridge",
+                  "Modify ridge lap",
+                  "No contact",
+                  "Point contact",
+                  "Point in socket (ovate)",
+                ],
               },
-              marylandBridge: {
-                enabled: { type: Boolean, default: false },
-                ponticDesign: {
-                  type: String,
-                  enum: [
-                    "Full ridge",
-                    "Modify ridge lap",
-                    "No contact",
-                    "Point contact",
-                    "Point in socket (ovate)",
-                  ],
-                },
-                teeth: [String],
-                ponticTeeth: [String],
-                wingTeeth: [String],
-                shade: [String],
-                specialInstructions: String,
-                attachments: [AttachmentSchema],
-              },
-              conventionalBridge: {
-                enabled: { type: Boolean, default: false },
-                ponticDesign: {
-                  type: String,
-                  enum: [
-                    "Full ridge",
-                    "Modify ridge lap",
-                    "No contact",
-                    "Point contact",
-                    "Point in socket (ovate)",
-                  ],
-                },
-                teeth: [String],
-                shade: [String],
-                ponticTeeth: [String],
-                specialInstructions: String,
-                attachments: [AttachmentSchema],
-              },
+              teeth: [String],
+              shade: [String],
+              ponticTeeth: [String],
+              specialInstructions: String,
+              attachments: [AttachmentSchema],
             },
           },
           compositeOnlay: {
-            enabled: { type: Boolean, default: false },
             teeth: [String],
             shade2D: [String],
             shade3D: [String],
