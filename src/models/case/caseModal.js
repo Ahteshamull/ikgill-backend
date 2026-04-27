@@ -367,7 +367,8 @@ const CaseSchema = new mongoose.Schema(
                   }
                   return true;
                 },
-                message: "Post and Core is not available for gold material type.",
+                message:
+                  "Post and Core is not available for gold material type.",
               },
             },
             teeth: [String],
@@ -377,7 +378,9 @@ const CaseSchema = new mongoose.Schema(
         },
         metalFree: {
           emax: {
+            enabled: { type: Boolean, default: false },
             singleUnitCrown: {
+              enabled: { type: Boolean, default: false },
               teeth: [String],
               shade2D: [String],
               shade3D: [String],
@@ -385,6 +388,7 @@ const CaseSchema = new mongoose.Schema(
               attachments: [AttachmentSchema],
             },
             veneer: {
+              enabled: { type: Boolean, default: false },
               teeth: [String],
               shade2D: [String],
               shade3D: [String],
@@ -393,7 +397,9 @@ const CaseSchema = new mongoose.Schema(
             },
           },
           zirconia: {
+            enabled: { type: Boolean, default: false },
             singleUnitCrown: {
+              enabled: { type: Boolean, default: false },
               teeth: [String],
               shade2D: [String],
               shade3D: [String],
@@ -401,6 +407,7 @@ const CaseSchema = new mongoose.Schema(
               attachments: [AttachmentSchema],
             },
             veneer: {
+              enabled: { type: Boolean, default: false },
               teeth: [String],
               shade2D: [String],
               shade3D: [String],
@@ -446,6 +453,7 @@ const CaseSchema = new mongoose.Schema(
             },
           },
           compositeOnlay: {
+            enabled: { type: Boolean, default: false },
             teeth: [String],
             shade2D: [String],
             shade3D: [String],
