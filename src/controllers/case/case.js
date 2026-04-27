@@ -30,6 +30,18 @@ const extractClinicalDetails = (data) => {
   const tier = data.selectedTier === "Standard" ? data.standard : data.premium;
   if (!tier) return details;
 
+  // Helper to check if an object has meaningful data (teeth arrays with items, etc.)
+  const hasData = (obj) => {
+    if (!obj || typeof obj !== "object") return false;
+    for (const key in obj) {
+      const val = obj[key];
+      if (Array.isArray(val) && val.length > 0) return true;
+      if (typeof val === "string" && val.trim() !== "") return true;
+      if (typeof val === "boolean" && val === true) return true;
+    }
+    return false;
+  };
+
   for (const catKey in tier) {
     const categoryObj = tier[catKey];
     if (typeof categoryObj !== "object" || categoryObj === null) continue;
@@ -64,6 +76,38 @@ const extractClinicalDetails = (data) => {
           }
 
           return details;
+        }
+
+        // Handle deeper nesting for metalFree in Premium tier (emax, zirconia, compositeOnlay)
+        // Structure: CrownBridge > metalFree > emax > singleUnitCrown (no enabled flag, check for data)
+        if (
+          typeof restorationObj === "object" &&
+          restorationObj !== null &&
+          !restorationObj.enabled &&
+          resKey !== "materialType" &&
+          resKey !== "enabled"
+        ) {
+          // Check if this is a wrapper object (like emax, zirconia) containing restoration items
+          for (const deepKey in restorationObj) {
+            const deepObj = restorationObj[deepKey];
+            if (typeof deepObj === "object" && deepObj !== null) {
+              // Check if this deep object has actual data (teeth, shade, etc.)
+              if (deepObj.enabled === true || hasData(deepObj)) {
+                details.category = CATEGORY_MAP[catKey] || catKey;
+                details.subCategory = subKey
+                  .replace(/([A-Z])/g, " $1")
+                  .replace(/^./, (str) => str.toUpperCase());
+                details.restoration = resKey
+                  .replace(/([A-Z])/g, " $1")
+                  .replace(/^./, (str) => str.toUpperCase());
+                details.restorationType = deepKey
+                  .replace(/([A-Z])/g, " $1")
+                  .replace(/^./, (str) => str.toUpperCase());
+
+                return details;
+              }
+            }
+          }
         }
       }
     }
