@@ -378,25 +378,24 @@ const CaseSchema = new mongoose.Schema(
         },
         metalFree: {
           emax: {
-            enabled: {
-              type: Boolean, default: false, 
+            enabled: { type: Boolean, default: false },
             singleUnitCrown: {
-                teeth: [String],
-                shade2D: [String],
-                shade3D: [String],
-                specialInstructions: String,
-                attachments: [AttachmentSchema],
-              },
-              veneer: {
-                teeth: [String],
-                shade2D: [String],
-                shade3D: [String],
-                specialInstructions: String,
-                attachments: [AttachmentSchema],
-              },
-            }
+              teeth: [String],
+              shade2D: [String],
+              shade3D: [String],
+              specialInstructions: String,
+              attachments: [AttachmentSchema],
+            },
+            veneer: {
+              teeth: [String],
+              shade2D: [String],
+              shade3D: [String],
+              specialInstructions: String,
+              attachments: [AttachmentSchema],
+            },
           },
           zirconia: {
+            enabled: { type: Boolean, default: false },
             singleUnitCrown: {
               teeth: [String],
               shade2D: [String],
